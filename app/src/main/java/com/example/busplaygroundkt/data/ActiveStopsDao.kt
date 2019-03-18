@@ -11,6 +11,7 @@ data access object (dao) is an object that defines the methods to interact with 
 
 @Dao
 interface ActiveStopsDao {
+
     @Query("SELECT * FROM ActiveStops")
     fun getAllActiveStops(): LiveData<List<Stops>>
 }
