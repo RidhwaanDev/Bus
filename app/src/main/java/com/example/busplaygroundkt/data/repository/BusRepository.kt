@@ -14,18 +14,17 @@ import javax.inject.Singleton
  */
 
 @Singleton
-class BusRepository @Inject constructor(
-  private val busService: VehiclesService
-){
+class BusRepository @Inject constructor( private val busService: VehiclesService) {
 
     fun getVehicleLocations() : LiveData<Map<String,Vehicles.Location>> {
+
          val mutLiveData = MutableLiveData<Map<String,Vehicles.Location>>()
          val locationMap =  mutableMapOf<String,Vehicles.Location>()
 
         busService.getVehicles(Config.agencyID, Config.nbCampus)
              .subscribeOn(Schedulers.io())
              .map {it.data.get(Config.nbCampus)!!}
-            .subscribe({item ->
+             .subscribe({item ->
                     item.forEach{
                         locationMap.put(it.routeId, it.location)
                     }
@@ -37,8 +36,5 @@ class BusRepository @Inject constructor(
         return mutLiveData
 
         }
-
-
-
 
 }
