@@ -11,14 +11,15 @@ import javax.inject.Inject
 class MapViewModel : ViewModel(), LifecycleObserver{
 
     @Inject
-    lateinit var busRepository: BusRepository
+    private lateinit var busRepository: BusRepository
     private var liveBusData : LiveData<Map<String, Vehicles.Location>>? = null
 
     fun loadBusData(): LiveData<Map<String,Vehicles.Location>>? {
+
             liveBusData = null
             liveBusData = MutableLiveData<Map<String,Vehicles.Location>>()
             liveBusData = busRepository.getVehicleLocations()
-            return liveBusData
+        return liveBusData
     }
 
 
