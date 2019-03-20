@@ -1,8 +1,7 @@
 apply plugin: 'com.android.application'
-
 apply plugin: 'kotlin-android'
-
 apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
 
 android {
     compileSdkVersion 28
@@ -24,7 +23,7 @@ android {
 
 dependencies {
 
-    String archVersion = '1.0.0'
+    def archVersion = '1.0.0'
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
@@ -51,10 +50,15 @@ dependencies {
     // google maps
     implementation 'com.google.android.gms:play-services-location:16.0.0'
     implementation 'com.google.android.gms:play-services-maps:16.1.0'
-
     // dagger
-    annotationProcessor 'com.google.dagger:dagger-compiler:2.16'
-    implementation 'com.google.dagger:dagger:2.16'
+
+    def daggerVer = 2.21
+    kapt "com.google.dagger:dagger-android-processor:$daggerVer"
+    kapt "com.google.dagger:dagger-compiler:$daggerVer"
+    implementation "com.google.dagger:dagger:$daggerVer"
+    annotationProcessor "com.google.dagger:dagger-compiler:$daggerVer"
+//  implementation "com.google.dagger:dagger-android-support:$daggerVer"
+
 
 
 

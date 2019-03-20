@@ -8,10 +8,8 @@ import com.example.busplaygroundkt.data.model.Vehicles
 import com.example.busplaygroundkt.data.repository.BusRepository
 import javax.inject.Inject
 
-class MapViewModel : ViewModel(), LifecycleObserver{
+class MapViewModel @Inject constructor(val busRepository: BusRepository): ViewModel(), LifecycleObserver{
 
-    @Inject
-    private lateinit var busRepository: BusRepository
     private var liveBusData : LiveData<Map<String, Vehicles.Location>>? = null
 
     fun loadBusData(): LiveData<Map<String,Vehicles.Location>>? {

@@ -45,9 +45,16 @@ class MapFragment : Fragment (), OnMapReadyCallback{
     }
 
     override fun onMapReady(map: GoogleMap?) {
-        mMapViewModel.loadBusData()?.observe(this, Observer { item -> item?.forEach{(key,value) -> )
-                Log.d(TAG,"$key => $value" )
-
+        mMapViewModel.loadBusData()?.observe(this, Observer { item -> item?.forEach{(key,value) ->  Log.d(TAG,"$key => $value")
+            /**
+             *
+             *
+             *  Like Transit app there should be a bottom navigation tab with all the active Routes
+             *
+             *
+             *
+             *
+             */
           }
         })
     }
