@@ -4,6 +4,7 @@ import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
 import android.support.annotation.MainThread
 import com.example.busplaygroundkt.Config
+import com.example.busplaygroundkt.P
 import com.example.busplaygroundkt.data.model.Vehicles
 import com.example.busplaygroundkt.data.remote.VehiclesService
 import com.example.busplaygroundkt.di.AppComponent
@@ -25,9 +26,10 @@ class BusRepository @Inject constructor( private val busService: VehiclesService
 
         busService.getVehicles(Config.agencyID, Config.nbCampus)
              .subscribeOn(Schedulers.io())
-             .map {it.data.get(Config.nbCampus)!!}
+             .map { it.data.get(Config.nbCampus)!!}
              .subscribe({item ->
                     item.forEach{
+                        P.s(it.location,this)
                         locationMap.put(it.routeId, it.location)
                     }
                     mutLiveData.value = locationMap
@@ -38,5 +40,6 @@ class BusRepository @Inject constructor( private val busService: VehiclesService
         return mutLiveData
 
         }
+
 
 }
