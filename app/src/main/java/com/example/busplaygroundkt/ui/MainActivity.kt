@@ -5,9 +5,14 @@ import android.os.Bundle
 import android.util.Log
 import com.example.busplaygroundkt.R
 
+/**
+ *
+ *
+ * ENTRY POINT TO THE APPLICATION
+ *
+ */
 
 class MainActivity : AppCompatActivity() {
-     private val BASEURL = "https://transloc-api-1-2.p.rapidapi.com"
      private val TAG = "MainActivity.kt"
 
     override fun onCreate(savedInstanceState: Bundle?) {
