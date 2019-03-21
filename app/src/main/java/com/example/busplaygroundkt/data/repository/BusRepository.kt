@@ -8,8 +8,10 @@ import com.example.busplaygroundkt.P
 import com.example.busplaygroundkt.data.model.Vehicles
 import com.example.busplaygroundkt.data.remote.VehiclesService
 import com.example.busplaygroundkt.di.AppComponent
+import io.reactivex.Observable
 import io.reactivex.schedulers.Schedulers
 import retrofit2.Retrofit
+import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 /**
@@ -24,21 +26,27 @@ class BusRepository @Inject constructor( private val busService: VehiclesService
          val mutLiveData = MutableLiveData<Map<String,Vehicles.Location>>()
          val locationMap =  mutableMapOf<String,Vehicles.Location>()
 
-        busService.getVehicles(Config.agencyID, Config.nbCampus)
-             .subscribeOn(Schedulers.io())
-             .map { it.data.get(Config.nbCampus)!!}
-             .subscribe({item ->
-                    item.forEach{
-                        P.s(it.location,this)
-                        locationMap.put(it.routeId, it.location)
-                    }
-                    mutLiveData.value = locationMap
-            }, {t:Throwable? -> t?.printStackTrace()}
+//        busService.getVehicles(Config.agencyID, Config.nbCampus)
+//             .subscribeOn(Schedulers.io())
+//             .map { it.data.get(Config.nbCampus)!!}
+//             .subscribe({item ->
+//                    item.forEach{
+//                        P.s(it.location,this)
+//                        locationMap.put(it.routeId, it.location)
+//                    }
+//                    mutLiveData.value = locationMap
+//            }, {t:Throwable? -> t?.printStackTrace()}
+//
+//            )
+            busService.getVehicles(Config.agencyID, Config.nbCampus)
+                .subscribeOn(Schedulers.io())
+                .map { it.data.getValue(Config.agencyID.toString())}
+                .subscribe({item -> item.forEach { locationMap.put(it.routeId,it.location) }
+                    mutLiveData.postValue(locationMap)
+                }
+                , {t: Throwable? -> t?.printStackTrace()})
 
-            )
-
-        return mutLiveData
-
+            return mutLiveData
         }
 
 

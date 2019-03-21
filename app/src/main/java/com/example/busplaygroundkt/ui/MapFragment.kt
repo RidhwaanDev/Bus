@@ -10,14 +10,16 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.example.busplaygroundkt.P
 import com.example.busplaygroundkt.R
 import com.google.android.gms.maps.*
-
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
+import kotlinx.android.synthetic.main.activity_maps.*
 
 
 class MapFragment : Fragment (), OnMapReadyCallback{
 
-    private lateinit var mMap: GoogleMap
     private lateinit var mMapViewModel: MapViewModel
     private val TAG = MapFragment::class.java.simpleName
 
@@ -27,16 +29,21 @@ class MapFragment : Fragment (), OnMapReadyCallback{
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        if(map == null) P.s("MAP IS NULL", this)
+
         initViewModel()
+
+
     }
 
     private fun initViewModel(){
         mMapViewModel = ViewModelProviders.of(this).get(MapViewModel::class.java)
         mMapViewModel.let { lifecycle.addObserver(it) }
-        mMapViewModel.loadBusData()
     }
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val v  = inflater.inflate(R.layout.activity_maps, container ,false)
+
         return v
     }
 
@@ -45,18 +52,24 @@ class MapFragment : Fragment (), OnMapReadyCallback{
     }
 
     override fun onMapReady(map: GoogleMap?) {
-        mMapViewModel.loadBusData()?.observe(this, Observer { item -> item?.forEach{(key,value) ->  Log.d(TAG,"$key => $value")
-            /**
-             *
-             *
-             *  Like Transit app there should be a bottom navigation tab with all the active Routes
-             *
-             *
-             *
-             *
-             */
-          }
+
+        val latlng = LatLng(40.4862, 74.4518)
+        map?.moveCamera(CameraUpdateFactory.newLatLng(latlng))
+        P.s("OnMapReady",this)
+        mMapViewModel.loadBusData()?.observe(this, Observer { result ->
+            P.s("IM HERE", this)
+            result?.forEach { k, v ->
+                P.s("$k   $v", "map")
+
+                map?.addMarker(MarkerOptions().position(LatLng(v.lat,v.lng)))
+
+            }
         })
+
+
+
+
+
     }
 
 }
