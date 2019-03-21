@@ -16,6 +16,8 @@ import com.example.busplaygroundkt.R
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.Polyline
+import com.google.android.gms.maps.model.PolylineOptions
 import kotlinx.android.synthetic.*
 
 
@@ -66,14 +68,17 @@ class MapFragment : Fragment (), OnMapReadyCallback{
         mMap = map
         mMap?.moveCamera(CameraUpdateFactory.newLatLng(nb))
         mMapViewModel.loadBusData()?.observe(this, Observer { vehicles ->
-            vehicles?.forEach { (routeid,bus) -> mMap?.addMarker(MarkerOptions().position(LatLng(bus.lat,bus.lng)))}
-
+            vehicles?.forEach { (routeid,bus) -> mMap?.addMarker(MarkerOptions().position(LatLng(bus.lat,bus.lng)).title(routeid))}
         })
 
-
-
-
     }
+
+    fun makePolyline(coords: List<LatLng>) : PolylineOptions {
+        val options = PolylineOptions()
+        coords.forEach { latlng -> options.add(latlng) }
+        return o
+    }
+
 
     override fun onDestroy() {
         mMapView.onDestroy()
