@@ -24,6 +24,7 @@ class MainActivity : AppCompatActivity() {
             .commit()
 
 
+
     }
 
     fun log(str:String?) {

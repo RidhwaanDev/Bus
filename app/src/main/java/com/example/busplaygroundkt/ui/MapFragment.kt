@@ -14,10 +14,7 @@ import com.example.busplaygroundkt.Config
 import com.example.busplaygroundkt.P
 import com.example.busplaygroundkt.R
 import com.google.android.gms.maps.*
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.gms.maps.model.Polyline
-import com.google.android.gms.maps.model.PolylineOptions
+import com.google.android.gms.maps.model.*
 import kotlinx.android.synthetic.*
 
 
@@ -37,8 +34,6 @@ class MapFragment : Fragment (), OnMapReadyCallback{
         super.onCreate(savedInstanceState)
 
         initViewModel()
-
-
 
     }
 
@@ -62,13 +57,36 @@ class MapFragment : Fragment (), OnMapReadyCallback{
 
     }
 
+    /**
+     *
+     *  GET IT DRAW ALL BUSSES IN REAL TIME ( FOR THURSDAY )
+     *
+     */
+
 
     override fun onMapReady(map: GoogleMap?) {
         val nb = LatLng(Config.NJ_LAT, Config.NJ_LNG)
+        val markerList  = arrayListOf<Marker?>()
+
         mMap = map
         mMap?.moveCamera(CameraUpdateFactory.newLatLng(nb))
         mMapViewModel.loadBusData()?.observe(this, Observer { vehicles ->
-            vehicles?.forEach { (routeid,bus) -> mMap?.addMarker(MarkerOptions().position(LatLng(bus.lat,bus.lng)).title(routeid))}
+            // clear
+            for(i in 0 until markerList.size){
+                markerList[i]?.re.mmove()
+            }
+            // draw
+            vehicles?.forEach { (routeid,bus) ->
+               run{
+                    // remove current markers ( we dont want to redraw the old markers )
+
+                   val single_marker: Marker? = mMap?.addMarker(MarkerOptions().position(LatLng(bus.lat, bus.lng)).title(routeid))
+                   single_marker?.showInfoWindow()
+                   markerList.add(single_marker)
+                   }
+
+
+            }
         })
 
     }
@@ -76,7 +94,7 @@ class MapFragment : Fragment (), OnMapReadyCallback{
     fun makePolyline(coords: List<LatLng>) : PolylineOptions {
         val options = PolylineOptions()
         coords.forEach { latlng -> options.add(latlng) }
-        return o
+        return options
     }
 
 

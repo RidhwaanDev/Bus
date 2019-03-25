@@ -12,6 +12,7 @@ import io.reactivex.Observable
 import io.reactivex.schedulers.Schedulers
 import retrofit2.Retrofit
 import java.util.*
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 /**
@@ -26,22 +27,11 @@ class BusRepository @Inject constructor( private val busService: VehiclesService
          val mutLiveData = MutableLiveData<Map<String,Vehicles.Location>>()
          val locationMap =  mutableMapOf<String,Vehicles.Location>()
 
-//        busService.getVehicles(Config.agencyID, Config.nbCampus)
-//             .subscribeOn(Schedulers.io())
-//             .map { it.data.get(Config.nbCampus)!!}
-//             .subscribe({item ->
-//                    item.forEach{
-//                        P.s(it.location,this)
-//                        locationMap.put(it.routeId, it.location)
-//                    }
-//                    mutLiveData.value = locationMap
-//            }, {t:Throwable? -> t?.printStackTrace()}
-//
-//            )
-            busService.getVehicles(Config.agencyID, Config.nbCampus)
+        Observable.interval(0,2, TimeUnit.SECONDS)
+                .flatMap { busService.getVehicles(Config.agencyID, Config.nbCampus) }
                 .subscribeOn(Schedulers.io())
                 .map { it.data.getValue(Config.agencyID.toString())}
-                .subscribe({item -> item.forEach { locationMap.put(it.routeId,it.location) }
+                .subscribe({item -> item.forEach { locationMap.put(it.long_name,it.location) }
                     mutLiveData.postValue(locationMap)
                 }
                 , {t: Throwable? -> t?.printStackTrace()})
