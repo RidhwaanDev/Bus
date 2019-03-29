@@ -1,31 +1,30 @@
 package com.example.busplaygroundkt.ui
 
 import android.arch.lifecycle.Observer
-import android.arch.lifecycle.ViewModelProvider
 import android.arch.lifecycle.ViewModelProviders
-import android.content.Context
 import android.os.Bundle
 import android.support.v4.app.Fragment
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import com.example.busplaygroundkt.Config
-import com.example.busplaygroundkt.P
 import com.example.busplaygroundkt.R
-import com.example.busplaygroundkt.data.model.Vehicles
-import com.google.android.gms.maps.*
-import com.google.android.gms.maps.model.*
-import kotlinx.android.synthetic.*
-import java.lang.NullPointerException
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.MapView
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.PolygonOptions
+import io.reactivex.Observable
 
 
-class MapFragment : Fragment (), OnMapReadyCallback, GoogleMap.OnMarkerClickListener{
+class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListener{
 
     private lateinit var mMapViewModel: MapViewModel
     private lateinit var mMapView: MapView
-    private val markerList = mutableMapOf<String,Marker?>()
+    private val markerList = mutableMapOf<String, Marker?>()
 
 
     private var mMap :GoogleMap? = null
@@ -61,63 +60,79 @@ class MapFragment : Fragment (), OnMapReadyCallback, GoogleMap.OnMarkerClickList
         mMapView.getMapAsync(this)
 
     }
-
     /**
      *
      *  GET IT DRAW ALL BUSSES IN REAL TIME ( FOR THURSDAY )
      *
      */
 
-
     override fun onMapReady(map: GoogleMap?) {
         val nb = LatLng(Config.NJ_LAT, Config.NJ_LNG)
         val markerList = mutableMapOf<String, Marker?>()
+        val stopMarkerList = mutableMapOf<String, Marker?>()
 
-
+        makePolyline(map)
         mMap = map
         mMap?.setOnMarkerClickListener(this)
         mMap?.moveCamera(CameraUpdateFactory.newLatLng(nb))
 
-        mMapViewModel.loadBusData()?.observe(this, Observer { vehicles ->
-            vehicles?.forEach { (routeid,bus) ->
-                    if(markerList[routeid] != null){
+//        mMapViewModel.loadBusData()?.observe(this, Observer { vehicles ->
+//            vehicles?.forEach { (routeid,bus) ->
+//                    if(markerList[routeid] != null){
+////                        println("updating bus position")
+//                        val marker = markerList[routeid]
+//                        marker?.position = LatLng(bus.lat, bus.lng)
+//                    } else {
+////                        println("creating bus cuz it didnt exists before")
+//
+//                        val marker= mMap?.addMarker(MarkerOptions().position(LatLng(bus.lat, bus.lng)).title(routeid))
+//                        markerList.put(routeid,marker)
+//                    }
+//            }
+//
+//        })
 
-                        val marker = markerList[routeid]
-                        marker?.position = LatLng(bus.lat, bus.lng)
+        mMapViewModel.loadBusStops()?.observe(this, Observer { result ->
+            result?.forEach {
+
+                    response ->
+                response.data.forEach { stop ->
+
+                    println("${stop.location.lat},${stop.location.lng}")
+
+                         if(markerList[stop.stopID] != null){
+                         val marker = markerList[stop.stopID]
+                         marker?.position = LatLng(stop.location.lat, stop.location.lng)
                     } else {
-                        val marker= mMap?.addMarker(MarkerOptions().position(LatLng(bus.lat, bus.lng)).title(routeid))
-                        markerList.put(routeid,marker)
 
+                        val marker= mMap?.addMarker(MarkerOptions().position(LatLng(stop.location.lat, stop.location.lng)).title(stop.name))
+                        markerList.put(stop.stopID,marker)
                     }
 
-
+                }
             }
-
-        }
-
-        )
-//        for((k,v) in markerList) {
-//            val s = mMap?.addMarker(MarkerOptions().position(LatLng(v.lat, v.lng)).snippet(k))
-//            s?.tag = "$k is here"
-//            s?.showInfoWindow()
-//        }
-//        markerList.clear()
-
-
+        })
     }
 
-    override fun onMarkerClick(p0: Marker?): Boolean {
-        P.s("marker clicked", this)
 
+    override fun onMarkerClick(p0: Marker?): Boolean {
         return false
     }
 
-    fun makePolyline(coords: List<LatLng>) : PolylineOptions {
-        val options = PolylineOptions()
-        coords.forEach { latlng -> options.add(latlng) }
-        return options
-    }
+    fun makePolyline(map : GoogleMap?) {
 
+        val rectOptions = PolygonOptions()
+            .add(
+                LatLng(37.35, -122.0),
+                LatLng(37.45, -122.0),
+                LatLng(37.45, -122.2),
+                LatLng(37.35, -122.2),
+                LatLng(37.35, -122.0)
+            )
+
+        map?.addPolygon(rectOptions)
+
+    }
 
     override fun onDestroy() {
         mMapView.onDestroy()
@@ -143,7 +158,5 @@ class MapFragment : Fragment (), OnMapReadyCallback, GoogleMap.OnMarkerClickList
         mMapView.onLowMemory()
         super.onLowMemory()
     }
-
-
 
 }

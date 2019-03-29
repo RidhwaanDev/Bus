@@ -1,6 +1,7 @@
 package com.example.busplaygroundkt.di
 
 import com.example.busplaygroundkt.Config
+import com.example.busplaygroundkt.data.remote.StopsService
 import com.example.busplaygroundkt.data.remote.VehiclesService
 import dagger.Module
 import dagger.Provides
@@ -37,5 +38,12 @@ fun makeOkHTTPClient(): OkHttpClient =
 
 @Provides @Singleton
 fun provideVehiclesService(@Named("Retrofit") r:Retrofit): VehiclesService = r.create(VehiclesService::class.java)
+
+
+
+@Provides @Singleton
+fun provideStopsService(@Named("Retrofit") r:Retrofit): StopsService = r.create(StopsService::class.java)
+
+
 
 }
