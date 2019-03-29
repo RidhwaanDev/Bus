@@ -13,10 +13,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.gms.maps.model.PolygonOptions
+import com.google.android.gms.maps.model.*
 import io.reactivex.Observable
 
 
@@ -69,9 +66,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
     override fun onMapReady(map: GoogleMap?) {
         val nb = LatLng(Config.NJ_LAT, Config.NJ_LNG)
         val markerList = mutableMapOf<String, Marker?>()
-        val stopMarkerList = mutableMapOf<String, Marker?>()
-
-        makePolyline(map)
+        val listOfCoordsForLine = mutableListOf<LatLng>()
         mMap = map
         mMap?.setOnMarkerClickListener(this)
         mMap?.moveCamera(CameraUpdateFactory.newLatLng(nb))
@@ -91,14 +86,17 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
 //            }
 //
 //        })
-
+        val options = PolylineOptions()
         mMapViewModel.loadBusStops()?.observe(this, Observer { result ->
             result?.forEach {
 
                     response ->
                 response.data.forEach { stop ->
 
-                    println("${stop.location.lat},${stop.location.lng}")
+                         println("${stop.location.lat},${stop.location.lng}")
+
+                         options.add(LatLng(stop.location.lat,stop.location.lat))
+
 
                          if(markerList[stop.stopID] != null){
                          val marker = markerList[stop.stopID]
@@ -111,6 +109,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
 
                 }
             }
+            mMap?.addPolyline(options)
         })
     }
 
@@ -119,20 +118,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
         return false
     }
 
-    fun makePolyline(map : GoogleMap?) {
 
-        val rectOptions = PolygonOptions()
-            .add(
-                LatLng(37.35, -122.0),
-                LatLng(37.45, -122.0),
-                LatLng(37.45, -122.2),
-                LatLng(37.35, -122.2),
-                LatLng(37.35, -122.0)
-            )
-
-        map?.addPolygon(rectOptions)
-
-    }
 
     override fun onDestroy() {
         mMapView.onDestroy()
