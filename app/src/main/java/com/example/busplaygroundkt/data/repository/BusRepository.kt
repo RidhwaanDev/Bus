@@ -27,11 +27,11 @@ class BusRepository @Inject constructor( private val busService: VehiclesService
          val mutLiveData = MutableLiveData<Map<String,Vehicles.Location>>()
          val locationMap =  mutableMapOf<String,Vehicles.Location>()
 
-        Observable.interval(0,2, TimeUnit.SECONDS)
+        Observable.interval(0,5, TimeUnit.SECONDS)
                 .flatMap { busService.getVehicles(Config.agencyID, Config.nbCampus) }
                 .subscribeOn(Schedulers.io())
                 .map { it.data.getValue(Config.agencyID.toString())}
-                .subscribe({item -> item.forEach { locationMap.put(it.long_name,it.location) }
+                .subscribe({item -> item.forEach { locationMap.put(it.vehicleId,it.location) }
                     mutLiveData.postValue(locationMap)
                 }
                 , {t: Throwable? -> t?.printStackTrace()})

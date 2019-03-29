@@ -15,7 +15,6 @@ import javax.inject.Singleton
 @Module
 class RemoteModule {
 
-
 @Provides @Singleton @Named("Retrofit")
 fun provideRetrofitClient(@Named("OkHttpClient") client: OkHttpClient): Retrofit = Retrofit.Builder()
         .baseUrl(Config.BASE_URL)
@@ -38,7 +37,5 @@ fun makeOkHTTPClient(): OkHttpClient =
 
 @Provides @Singleton
 fun provideVehiclesService(@Named("Retrofit") r:Retrofit): VehiclesService = r.create(VehiclesService::class.java)
-
-
 
 }

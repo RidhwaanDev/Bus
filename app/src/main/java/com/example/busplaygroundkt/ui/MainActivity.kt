@@ -23,8 +23,6 @@ class MainActivity : AppCompatActivity() {
         supportFragmentManager.beginTransaction().add(R.id.content,mapFragment)
             .commit()
 
-
-
     }
 
     fun log(str:String?) {

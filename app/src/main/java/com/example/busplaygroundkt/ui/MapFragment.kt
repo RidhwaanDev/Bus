@@ -10,18 +10,23 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import com.example.busplaygroundkt.Config
 import com.example.busplaygroundkt.P
 import com.example.busplaygroundkt.R
+import com.example.busplaygroundkt.data.model.Vehicles
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.*
 import kotlinx.android.synthetic.*
+import java.lang.NullPointerException
 
 
-class MapFragment : Fragment (), OnMapReadyCallback{
+class MapFragment : Fragment (), OnMapReadyCallback, GoogleMap.OnMarkerClickListener{
 
     private lateinit var mMapViewModel: MapViewModel
     private lateinit var mMapView: MapView
+    private val markerList = mutableMapOf<String,Marker?>()
+
 
     private var mMap :GoogleMap? = null
     private val TAG = MapFragment::class.java.simpleName
@@ -66,29 +71,45 @@ class MapFragment : Fragment (), OnMapReadyCallback{
 
     override fun onMapReady(map: GoogleMap?) {
         val nb = LatLng(Config.NJ_LAT, Config.NJ_LNG)
-        val markerList  = arrayListOf<Marker?>()
+        val markerList = mutableMapOf<String, Marker?>()
+
 
         mMap = map
+        mMap?.setOnMarkerClickListener(this)
         mMap?.moveCamera(CameraUpdateFactory.newLatLng(nb))
+
         mMapViewModel.loadBusData()?.observe(this, Observer { vehicles ->
-            // clear
-            for(i in 0 until markerList.size){
-                markerList[i]?.re.mmove()
-            }
-            // draw
             vehicles?.forEach { (routeid,bus) ->
-               run{
-                    // remove current markers ( we dont want to redraw the old markers )
+                    if(markerList[routeid] != null){
 
-                   val single_marker: Marker? = mMap?.addMarker(MarkerOptions().position(LatLng(bus.lat, bus.lng)).title(routeid))
-                   single_marker?.showInfoWindow()
-                   markerList.add(single_marker)
-                   }
+                        val marker = markerList[routeid]
+                        marker?.position = LatLng(bus.lat, bus.lng)
+                    } else {
+                        val marker= mMap?.addMarker(MarkerOptions().position(LatLng(bus.lat, bus.lng)).title(routeid))
+                        markerList.put(routeid,marker)
+
+                    }
 
 
             }
-        })
 
+        }
+
+        )
+//        for((k,v) in markerList) {
+//            val s = mMap?.addMarker(MarkerOptions().position(LatLng(v.lat, v.lng)).snippet(k))
+//            s?.tag = "$k is here"
+//            s?.showInfoWindow()
+//        }
+//        markerList.clear()
+
+
+    }
+
+    override fun onMarkerClick(p0: Marker?): Boolean {
+        P.s("marker clicked", this)
+
+        return false
     }
 
     fun makePolyline(coords: List<LatLng>) : PolylineOptions {
