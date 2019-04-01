@@ -20,6 +20,8 @@ import com.google.android.gms.maps.model.PolylineOptions
 import com.google.android.gms.maps.model.Polyline
 import android.graphics.Color
 import com.example.busplaygroundkt.data.model.Stops
+import java.util.*
+import java.util.Map
 
 
 class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListener{
@@ -76,18 +78,49 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
         mMap?.setOnMarkerClickListener(this)
         mMap?.moveCamera(CameraUpdateFactory.newLatLng(nb))
 
-        Observable<>
+        val routeid_id_2_location = mutableMapOf<String, LatLng>()
+
+        mMapViewModel.loadBusStops()?.observe(this, Observer { result ->
+            result?.forEach { response ->
+                Observable.just(response.data)
+                    .flatMapIterable { it }
+//                    .buffer(2)
+                    .subscribe { item ->
+                        if(routeid_id_2_location.get(item.stopID) == null){
+                            routeid_id_2_location.put(item.stopID, LatLng(item.location.lat,item.location.lng))
+                        }
+
+                    }
+            }
+
+        })
+        val colors = listOf(Color.BLACK,Color.BLUE,Color.RED,Color.MAGENTA)
+        val r  = Random()
+
+        val route = "Route LX"
+        val options = PolylineOptions()
         mMapViewModel.loadRoutes()?.observe(this, Observer { routes ->
            routes
                ?.filter { it.is_active }
+               ?.filter { it.long_name.equals(route)}
                ?.forEach { route ->
                    Observable.just(route.stops)
                        .flatMapIterable { it }
-                       .subscribe { item ->
-                           println("${route.long_name} -> $item")
-                       }
+                       .buffer(2)
+                       .subscribe ({ item ->
+                                options.add(routeid_id_2_location.get(item.get(0)))
+                                    .add(routeid_id_2_location.get(item.get(1)))
+                                    .color(colors[3])
+                                    .width(9f)
+
+                                    }
+
+                           , {t: Throwable ->  t.printStackTrace()})
 
                }
+
+            mMap?.addPolyline(options)
+
         })
 
         load_bus_into_ui(map)
@@ -111,16 +144,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
 //        })
 //        val options = PolylineOptions()
 
-    mMapViewModel.loadBusStops()?.observe(this, Observer { result ->
-            result?.forEach { response ->
-                Observable.just(response.data)
-                    .flatMapIterable { it }
-                    .buffer(2)
-                    .subscribe { item ->
-                        println("${item.get(0).stopID} and ${item.get(1).stopID}")
-                    }
-            }
-        })
     }
 
 

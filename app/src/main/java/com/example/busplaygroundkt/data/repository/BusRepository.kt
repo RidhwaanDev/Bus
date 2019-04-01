@@ -74,8 +74,6 @@ class BusRepository @Inject constructor( private val busService: VehiclesService
                 {t: Throwable? -> t?.printStackTrace()})
 
         return mutLiveData
-
-
     }
 
 
