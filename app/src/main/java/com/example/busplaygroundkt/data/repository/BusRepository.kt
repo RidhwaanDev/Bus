@@ -5,8 +5,10 @@ import android.arch.lifecycle.MutableLiveData
 import android.support.annotation.MainThread
 import com.example.busplaygroundkt.Config
 import com.example.busplaygroundkt.P
+import com.example.busplaygroundkt.data.model.Routes
 import com.example.busplaygroundkt.data.model.Stops
 import com.example.busplaygroundkt.data.model.Vehicles
+import com.example.busplaygroundkt.data.remote.RoutesService
 import com.example.busplaygroundkt.data.remote.StopsService
 import com.example.busplaygroundkt.data.remote.VehiclesService
 import com.example.busplaygroundkt.di.AppComponent
@@ -24,7 +26,7 @@ import kotlin.collections.ArrayList
  */
 
 @Singleton
-class BusRepository @Inject constructor( private val busService: VehiclesService, private val busStopsService: StopsService) {
+class BusRepository @Inject constructor( private val busService: VehiclesService, private val busStopsService: StopsService, private val routesService: RoutesService) {
 
 
     fun getVehicleLocations() : LiveData<Map<String,Vehicles.Location>> {
@@ -57,6 +59,22 @@ class BusRepository @Inject constructor( private val busService: VehiclesService
 
 
         return mutLiveData
+
+    }
+
+    fun getRoutes() : LiveData<List<Routes.Route>>? {
+        val mutLiveData = MutableLiveData<List<Routes.Route>>()
+
+        routesService.getRoutes(Config.agencyID, Config.nbCampus)
+            .subscribeOn(Schedulers.io())
+            .map { it.data.getValue(Config.agencyID.toString()) }
+            .subscribe({
+                mutLiveData.postValue(it)
+            },
+                {t: Throwable? -> t?.printStackTrace()})
+
+        return mutLiveData
+
 
     }
 

@@ -1,6 +1,7 @@
 package com.example.busplaygroundkt.di
 
 import com.example.busplaygroundkt.Config
+import com.example.busplaygroundkt.data.remote.RoutesService
 import com.example.busplaygroundkt.data.remote.StopsService
 import com.example.busplaygroundkt.data.remote.VehiclesService
 import dagger.Module
@@ -16,16 +17,16 @@ import javax.inject.Singleton
 @Module
 class RemoteModule {
 
-@Provides @Singleton @Named("Retrofit")
-fun provideRetrofitClient(@Named("OkHttpClient") client: OkHttpClient): Retrofit = Retrofit.Builder()
+    @Provides @Singleton @Named("Retrofit")
+    fun provideRetrofitClient(@Named("OkHttpClient") client: OkHttpClient): Retrofit = Retrofit.Builder()
         .baseUrl(Config.BASE_URL)
         .client(client)
         .addConverterFactory(GsonConverterFactory.create())
         .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
         .build()
 
-@Provides @Singleton @Named("OkHttpClient")
-fun makeOkHTTPClient(): OkHttpClient =
+    @Provides @Singleton @Named("OkHttpClient")
+    fun makeOkHTTPClient(): OkHttpClient =
         OkHttpClient.Builder()
             .addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
             .addInterceptor {
@@ -36,13 +37,14 @@ fun makeOkHTTPClient(): OkHttpClient =
             }
             .build()
 
-@Provides @Singleton
-fun provideVehiclesService(@Named("Retrofit") r:Retrofit): VehiclesService = r.create(VehiclesService::class.java)
+    @Provides @Singleton
+    fun provideVehiclesService(@Named("Retrofit") r:Retrofit): VehiclesService = r.create(VehiclesService::class.java)
 
+    @Provides @Singleton
+    fun provideStopsService(@Named("Retrofit") r:Retrofit): StopsService = r.create(StopsService::class.java)
 
-
-@Provides @Singleton
-fun provideStopsService(@Named("Retrofit") r:Retrofit): StopsService = r.create(StopsService::class.java)
+    @Provides @Singleton
+    fun provideRoutesService(@Named("Retrofit") r: Retrofit): RoutesService = r.create(RoutesService::class.java)
 
 
 

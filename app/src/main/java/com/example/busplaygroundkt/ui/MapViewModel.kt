@@ -4,6 +4,7 @@ import android.arch.lifecycle.LifecycleObserver
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModel
+import com.example.busplaygroundkt.data.model.Routes
 import com.example.busplaygroundkt.data.model.Stops
 import com.example.busplaygroundkt.data.model.Vehicles
 import com.example.busplaygroundkt.data.repository.BusRepository
@@ -14,6 +15,7 @@ class MapViewModel : ViewModel(), LifecycleObserver{
 
     private var liveBusData : LiveData<Map<String, Vehicles.Location>>? = null
     private var liveBusStopData : LiveData<List<Stops.Response>>? = null
+    private var liveRouteData: LiveData<List<Routes.Route>>? = null
 
 
     @Inject
@@ -37,6 +39,13 @@ class MapViewModel : ViewModel(), LifecycleObserver{
         liveBusStopData = MutableLiveData<List<Stops.Response>>()
         liveBusStopData = busRepository.getBusStopLocations()
         return liveBusStopData
+    }
+
+    fun loadRoutes() : LiveData<List<Routes.Route>>?{
+        liveRouteData = null;
+        liveRouteData = MutableLiveData<List<Routes.Route>>()
+        liveRouteData = busRepository.getRoutes()
+        return liveRouteData
     }
 
     private fun initializeDagger() = BusApplication.appComponent.inject(this)

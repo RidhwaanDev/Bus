@@ -1,5 +1,6 @@
 package com.example.busplaygroundkt.ui
 
+import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
@@ -15,6 +16,10 @@ import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.*
 import io.reactivex.Observable
+import com.google.android.gms.maps.model.PolylineOptions
+import com.google.android.gms.maps.model.Polyline
+import android.graphics.Color
+import com.example.busplaygroundkt.data.model.Stops
 
 
 class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListener{
@@ -43,8 +48,8 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
         mMapViewModel.let { lifecycle.addObserver(it) }
     }
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val v  = inflater.inflate(R.layout.fragment_map, container ,false)
-        mMapView = v.findViewById(R.id.map)
+        val v  = inflater.inflate(com.example.busplaygroundkt.R.layout.fragment_map, container ,false)
+        mMapView = v.findViewById(com.example.busplaygroundkt.R.id.map)
         mMapView.onCreate(savedInstanceState)
         mMapView.getMapAsync(this)
 
@@ -71,6 +76,24 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
         mMap?.setOnMarkerClickListener(this)
         mMap?.moveCamera(CameraUpdateFactory.newLatLng(nb))
 
+        Observable<>
+        mMapViewModel.loadRoutes()?.observe(this, Observer { routes ->
+           routes
+               ?.filter { it.is_active }
+               ?.forEach { route ->
+                   Observable.just(route.stops)
+                       .flatMapIterable { it }
+                       .subscribe { item ->
+                           println("${route.long_name} -> $item")
+                       }
+
+               }
+        })
+
+        load_bus_into_ui(map)
+        load_stop_into_ui(map)
+        load_route_into_ui(map)
+
 //        mMapViewModel.loadBusData()?.observe(this, Observer { vehicles ->
 //            vehicles?.forEach { (routeid,bus) ->
 //                    if(markerList[routeid] != null){
@@ -86,33 +109,43 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
 //            }
 //
 //        })
-        val options = PolylineOptions()
-        mMapViewModel.loadBusStops()?.observe(this, Observer { result ->
-            result?.forEach {
+//        val options = PolylineOptions()
 
-                    response ->
-                response.data.forEach { stop ->
-
-                         println("${stop.location.lat},${stop.location.lng}")
-
-                         options.add(LatLng(stop.location.lat,stop.location.lat))
-
-
-                         if(markerList[stop.stopID] != null){
-                         val marker = markerList[stop.stopID]
-                         marker?.position = LatLng(stop.location.lat, stop.location.lng)
-                    } else {
-
-                        val marker= mMap?.addMarker(MarkerOptions().position(LatLng(stop.location.lat, stop.location.lng)).title(stop.name))
-                        markerList.put(stop.stopID,marker)
+    mMapViewModel.loadBusStops()?.observe(this, Observer { result ->
+            result?.forEach { response ->
+                Observable.just(response.data)
+                    .flatMapIterable { it }
+                    .buffer(2)
+                    .subscribe { item ->
+                        println("${item.get(0).stopID} and ${item.get(1).stopID}")
                     }
-
-                }
             }
-            mMap?.addPolyline(options)
         })
     }
 
+
+//                response.data.forEach { stop ->
+//
+//                         println("${stop.location.lat},${stop.location.lng}")
+//
+//                          val line = map?.addPolyline(
+//                        PolylineOptions()
+//                            .add(LatLng(stop.location.lat, stop.location.lng), LatLng(40.7, -74.0))
+//                            .width(5f)
+//                            .color(Color.RED)
+//
+//
+//                         if(markerList[stop.stopID] != null){
+//                         val marker = markerList[stop.stopID]
+//                         marker?.position = LatLng(stop.location.lat, stop.location.lng)
+////                    }
+////                }
+//            }
+//        })
+
+    fun load_bus_into_ui(map: GoogleMap?){}
+    fun load_route_into_ui(map: GoogleMap?){}
+    fun load_stop_into_ui(map: GoogleMap?){}
 
     override fun onMarkerClick(p0: Marker?): Boolean {
         return false
