@@ -2,7 +2,7 @@
 
 # Ruthers Bus App Rewrite 
 
-This is a playground to test and  play around with features for the official Rutgers App rewrite.
+This is a playground to test and  play around with features for the  Rutgers App rewrite.
 
 # Libraries used
 - RxJava
