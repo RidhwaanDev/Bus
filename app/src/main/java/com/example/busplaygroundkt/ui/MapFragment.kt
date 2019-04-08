@@ -31,12 +31,16 @@ import android.view.animation.LinearInterpolator
 import com.google.android.gms.maps.Projection
 import com.google.android.gms.maps.model.Marker
 import android.os.Handler
+import android.view.animation.AccelerateDecelerateInterpolator
+import android.view.animation.Animation
+import java.lang.Runnable
 
 
 class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListener{
 
     private lateinit var mMapViewModel: MapViewModel
     private lateinit var mMapView: MapView
+    private lateinit var singleRoute: String
     private val markerList = mutableMapOf<String, Marker?>()
 
 
@@ -133,58 +137,58 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
         load_stop_into_ui(map)
         load_route_into_ui(map)
 
-            mMapViewModel.loadBusData()?.observe(this, Observer { vehicles ->
+        mMapViewModel.loadBusData()?.observe(this, Observer { vehicles ->
             vehicles?.forEach { (routeid,bus) ->
                 if(markerList[routeid] != null){
+
                     var marker = markerList[routeid]
+                    val newpos = LatLng(bus.lat,bus.lng)
 
-                    if(marker?.position != LatLng(bus.lat,bus.lng)) {
-                        changePositionSmoothly(marker,LatLng(bus.lat,bus.lng))
-                        marker?.position = LatLng(bus.lat,bus.lng)
-
-                    }
-
-
+                    // here we go
+                    val handler = Handler()
+                    handler.post(map_animate(marker,marker?.position,newpos,handler))
 
                 } else {
 
-                        val bitmap = Bitmap.createBitmap(32,32,Bitmap.Config.ARGB_8888)
-                        val drawable  = resources.getDrawable(R.drawable.ic_bus_temp)
-                        val canvas = Canvas(bitmap)
-                        drawable.setBounds(0,0,bitmap.width,bitmap.height)
-                        drawable.draw(canvas)
-
-                        val marker= mMap?.addMarker(MarkerOptions().position(LatLng(bus.lat, bus.lng)).title(routeid))
-
-                        marker?.setIcon(BitmapDescriptorFactory.fromBitmap(bitmap))
-                        markerList.put(routeid,marker)
-                    }
+                    val bitmap = Bitmap.createBitmap(32,32,Bitmap.Config.ARGB_8888)
+                    val drawable  = resources.getDrawable(R.drawable.ic_bus_temp)
+                    val canvas = Canvas(bitmap)
+                    drawable.setBounds(0,0,bitmap.width,bitmap.height)
+                    drawable.draw(canvas)
+                    val marker= mMap?.addMarker(MarkerOptions().position(LatLng(bus.lat, bus.lng)).title(routeid))
+                    marker?.setIcon(BitmapDescriptorFactory.fromBitmap(bitmap))
+                    markerList.put(routeid,marker)
+                }
             }
         })
     }
 
+    inner class map_animate(val marker: Marker?, val oldpos : LatLng?, val newpos: LatLng, val handler: Handler) : Runnable {
+        val start : Long = SystemClock.uptimeMillis()
+        val interpolator = AccelerateDecelerateInterpolator()
+        val duration : Float = 3000f
 
-    fun changePositionSmoothly(marker:Marker?, newLatLng: LatLng) : Marker?  {
-        if(marker == null){
-            return null
+        var elapsed: Long = 0
+        var t : Float = 0f
+        var v : Float = 0f
+        var hidemarker : Boolean = false
+
+        override fun run() {
+            elapsed = SystemClock.uptimeMillis() - start
+            t = elapsed / duration
+            v = interpolator.getInterpolation(t)
+            var curr = LatLng(((oldpos!!.latitude) * ( 1 - t) + newpos.latitude * t) , oldpos!!.longitude* (1 -t) + newpos.longitude* t)
+
+            marker?.position = curr
+
+            if(t < 1){
+                handler.postDelayed(this,16)
+            } else {
+                if(hidemarker) marker?.setVisible(false) else marker?.setVisible(true)
+            }
         }
-
-        val animation = ValueAnimator.ofFloat(0f, 100f)
-        var previousStep = 0f
-        val deltaLatitude = newLatLng.latitude - marker.position.latitude
-        val deltaLongitude = newLatLng.longitude - marker.position.longitude
-
-        animation.setDuration(1500)
-
-        animation.addUpdateListener { updatedAnimation ->
-            val deltaStep = updatedAnimation.getAnimatedValue() as Float - previousStep
-            previousStep = updatedAnimation.getAnimatedValue() as Float
-            marker.position = LatLng(marker.position.latitude + deltaLatitude * deltaStep * 1/100, marker.position.longitude + deltaStep * deltaLongitude * 1/100)
-        }
-
-        animation.start()
-        return marker
     }
+
 
     fun load_bus_into_ui(map: GoogleMap?){
         val markerList = mutableMapOf<String, Marker?>()
@@ -202,7 +206,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
     }
 
     private fun getDrawable(): BitmapDescriptor = runBlocking {
-         loadDrawable("BUS")
+        loadDrawable("BUS")
     }
 
     private suspend fun loadDrawable(busText: String): BitmapDescriptor {

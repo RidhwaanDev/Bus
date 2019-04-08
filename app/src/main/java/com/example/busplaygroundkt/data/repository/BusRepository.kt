@@ -37,6 +37,7 @@ class BusRepository @Inject constructor( private val busService: VehiclesService
                 .flatMap { busService.getVehicles(Config.agencyID, Config.nbCampus) }
                 .subscribeOn(Schedulers.io())
                 .map { it.data.getValue(Config.agencyID.toString())}
+
                 .subscribe({item -> item.forEach { locationMap.put(it.vehicleId,it.location) }
                     mutLiveData.postValue(locationMap)
                 }
