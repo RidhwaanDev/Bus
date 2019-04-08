@@ -99,9 +99,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
         })
 
 
-
         val colors = listOf(Color.BLACK,Color.BLUE,Color.RED,Color.MAGENTA)
-
         val route = "Route EE"
         val options = PolylineOptions()
 
@@ -207,11 +205,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
     override fun onMarkerClick(p0: Marker?): Boolean {
         return false
     }
-
-    private fun getDrawable(): BitmapDescriptor = runBlocking {
-        loadDrawable("BUS")
-    }
-
+    
     private suspend fun loadDrawable(busText: String): BitmapDescriptor {
         val deferred_drawable : Deferred<BusDrawable> = GlobalScope.async {
             delay(1000L)
@@ -222,8 +216,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
         return final_icon
 
     }
-
-
 
     override fun onDestroy() {
         mMapView.onDestroy()
