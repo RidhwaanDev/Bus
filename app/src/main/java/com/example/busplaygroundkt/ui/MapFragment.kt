@@ -205,7 +205,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
     override fun onMarkerClick(p0: Marker?): Boolean {
         return false
     }
-    
+
     override fun onDestroy() {
         mMapView.onDestroy()
         super.onDestroy()
