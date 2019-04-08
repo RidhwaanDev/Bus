@@ -13,7 +13,11 @@ import com.example.busplaygroundkt.data.remote.StopsService
 import com.example.busplaygroundkt.data.remote.VehiclesService
 import com.example.busplaygroundkt.di.AppComponent
 import io.reactivex.Observable
+import io.reactivex.functions.BiFunction
 import io.reactivex.schedulers.Schedulers
+import kotlinx.android.synthetic.main.activity_main.view.*
+import kotlinx.android.synthetic.main.fragment_map.*
+import kotlinx.android.synthetic.main.fragment_map.view.*
 import retrofit2.Retrofit
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -37,7 +41,6 @@ class BusRepository @Inject constructor( private val busService: VehiclesService
                 .flatMap { busService.getVehicles(Config.agencyID, Config.nbCampus) }
                 .subscribeOn(Schedulers.io())
                 .map { it.data.getValue(Config.agencyID.toString())}
-
                 .subscribe({item -> item.forEach { locationMap.put(it.vehicleId,it.location) }
                     mutLiveData.postValue(locationMap)
                 }
@@ -45,6 +48,38 @@ class BusRepository @Inject constructor( private val busService: VehiclesService
 
             return mutLiveData
         }
+     fun zipBus(): Observable<Vehicles.Response> {
+
+         val busObservable: Observable<Vehicles.Response> = busService.getVehicles(Config.agencyID,Config.nbCampus)
+         val routesObservable: Observable<Routes.Response> = routesService.getRoutes(Config.agencyID,Config.nbCampus)
+
+         val routeid_to_bus_name = mutableMapOf<String,String>()
+         val result: Observable<Vehicles.Response> = Observable.zip(busObservable,routesObservable, object: BiFunction<Vehicles.Response,Routes.Response,Vehicles.Response>{
+             override fun apply(t1: Vehicles.Response, t2: Routes.Response): Vehicles.Response {
+                 t2.data.getValue(Config.agencyID.toString()).forEach { route ->  routeid_to_bus_name.put(route.routeId, route.long_name)}
+                 for (vehicle in t1.data.getValue(Config.agencyID.toString())) {
+                     vehicle.busName = routeid_to_bus_name[vehicle.routeId]!!
+                 }
+                 return t1
+             }
+         })
+
+         return result
+     }
+    fun getProperBus() : LiveData<List<Vehicles.Vehicle>> {
+        val mutLiveData = MutableLiveData<List<Vehicles.Vehicle>>()
+        val listOfBus = mutableListOf<Vehicles.Vehicle>()
+        Observable.interval(0,5,TimeUnit.SECONDS)
+            .subscribe { zipBus().subscribeOn(Schedulers.io()).subscribe { result ->
+                for (vehicle in result.data.getValue(Config.agencyID.toString())) {
+                    listOfBus.add(vehicle)
+                    mutLiveData.postValue(listOfBus)
+
+                }}}
+
+
+        return mutLiveData
+    }
 
     fun getBusStopLocations() : LiveData<List<Stops.Response>>? {
         val listOfStops = mutableListOf<Stops.Response>()

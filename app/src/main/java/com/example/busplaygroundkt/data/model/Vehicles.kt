@@ -10,7 +10,8 @@ object Vehicles {
 
     data class Vehicle(@SerializedName("route_id") val routeId:String,
                        @SerializedName("vehicle_id") val vehicleId:String,
-                       @SerializedName("location") val location:Location
+                       @SerializedName("location") val location:Location,
+                        var busName:String
     )
     data class Location(@SerializedName("lat" ) val lat:Double,
                         @SerializedName("lng")  val lng:Double

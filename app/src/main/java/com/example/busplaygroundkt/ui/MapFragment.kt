@@ -77,6 +77,11 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
         mMap?.setOnMarkerClickListener(this)
         mMap?.moveCamera(CameraUpdateFactory.newLatLng(nb))
 
+
+        mMapViewModel.busRepository.getProperBus().observe(this, Observer { result -> result?.forEach { item -> println("${item.busName} , ${item.location} ") } })
+
+
+
         val routeid_id_2_location = mutableMapOf<String, LatLng>()
 
         mMapViewModel.loadBusStops()?.observe(this, Observer { result ->
@@ -99,10 +104,10 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
         })
 
 
-        val colors = listOf(Color.BLACK,Color.BLUE,Color.RED,Color.MAGENTA)
-        val route = "Route EE"
-        val options = PolylineOptions()
-
+//        val colors = listOf(Color.BLACK,Color.BLUE,Color.RED,Color.MAGENTA)
+//        val route = "Route EE"
+//        val options = PolylineOptions()
+//
 //        mMapViewModel.loadRoutes()?.observe(this, Observer { routes ->
 //           routes
 //               ?.filter { it.is_active }
