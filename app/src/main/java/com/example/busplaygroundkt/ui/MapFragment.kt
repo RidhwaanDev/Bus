@@ -1,8 +1,5 @@
 package com.example.busplaygroundkt.ui
 
-import android.animation.TypeEvaluator
-import android.animation.ValueAnimator
-import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.graphics.Bitmap
@@ -22,17 +19,12 @@ import com.google.android.gms.maps.model.*
 import io.reactivex.Observable
 import com.google.android.gms.maps.model.PolylineOptions
 import android.graphics.Color
-import com.example.busplaygroundkt.P
 import com.example.busplaygroundkt.ui.components.BusDrawable
 import kotlinx.coroutines.*
-import android.support.v4.os.HandlerCompat.postDelayed
 import android.os.SystemClock
-import android.view.animation.LinearInterpolator
-import com.google.android.gms.maps.Projection
 import com.google.android.gms.maps.model.Marker
 import android.os.Handler
 import android.view.animation.AccelerateDecelerateInterpolator
-import android.view.animation.Animation
 import java.lang.Runnable
 
 
@@ -40,7 +32,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
 
     private lateinit var mMapViewModel: MapViewModel
     private lateinit var mMapView: MapView
-    private lateinit var singleRoute: String
     private val markerList = mutableMapOf<String, Marker?>()
 
 
@@ -77,11 +68,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
         mMapView.getMapAsync(this)
 
     }
-    /**
-     *
-     *  GET IT DRAW ALL BUSSES IN REAL TIME ( FOR THURSDAY )
-     *
-     */
+
 
     override fun onMapReady(map: GoogleMap?) {
         val nb = LatLng(Config.NJ_LAT, Config.NJ_LNG)
@@ -92,23 +79,32 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
 
         val routeid_id_2_location = mutableMapOf<String, LatLng>()
 
-//        mMapViewModel.loadBusStops()?.observe(this, Observer { result ->
-//            result?.forEach { response ->
-//                Observable.just(response.data)
-//                    .flatMapIterable { it }
-//                    .subscribe { item ->
-//                        if(routeid_id_2_location.get(item.stopID) == null){
-//                            routeid_id_2_location.put(item.stopID, LatLng(item.location.lat,item.location.lng))
-//                        }
-//
-//                    }
-//            }
-//
-//        })
+        mMapViewModel.loadBusStops()?.observe(this, Observer { result ->
+            result?.forEach { response ->
+                Observable.just(response.data)
+                    .flatMapIterable { it }
+                    .subscribe { item ->
+                        println( "name" + " " + item.location)
+                        if(routeid_id_2_location.get(item.stopID) == null){
+                            routeid_id_2_location.put(item.stopID, LatLng(item.location.lat,item.location.lng))
+                        }
+
+                        val marker = mMap?.addMarker(MarkerOptions().title(item.name).position(LatLng(item.location.lat, item.location.lng)))
+                        marker?.setIcon(BitmapDescriptorFactory.fromBitmap(drawableToBitmap(R.drawable.ic_stop_temp)))
+
+
+                    }
+            }
+
+        })
+
+
+
         val colors = listOf(Color.BLACK,Color.BLUE,Color.RED,Color.MAGENTA)
 
         val route = "Route EE"
         val options = PolylineOptions()
+
 //        mMapViewModel.loadRoutes()?.observe(this, Observer { routes ->
 //           routes
 //               ?.filter { it.is_active }
@@ -144,25 +140,33 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
                     var marker = markerList[routeid]
                     val newpos = LatLng(bus.lat,bus.lng)
 
-                    // here we go
+                    //  change pos smoothly
                     val handler = Handler()
                     handler.post(map_animate(marker,marker?.position,newpos,handler))
 
                 } else {
 
-                    val bitmap = Bitmap.createBitmap(32,32,Bitmap.Config.ARGB_8888)
-                    val drawable  = resources.getDrawable(R.drawable.ic_bus_temp)
-                    val canvas = Canvas(bitmap)
-                    drawable.setBounds(0,0,bitmap.width,bitmap.height)
-                    drawable.draw(canvas)
                     val marker= mMap?.addMarker(MarkerOptions().position(LatLng(bus.lat, bus.lng)).title(routeid))
-                    marker?.setIcon(BitmapDescriptorFactory.fromBitmap(bitmap))
+                    marker?.setIcon(BitmapDescriptorFactory.fromBitmap(drawableToBitmap(R.drawable.ic_bus_temp)))
                     markerList.put(routeid,marker)
                 }
             }
         })
     }
 
+    fun drawableToBitmap( res: Int): Bitmap{
+
+        val bitmap = Bitmap.createBitmap(32,32,Bitmap.Config.ARGB_8888)
+        val drawable  = resources.getDrawable(res)
+        val canvas = Canvas(bitmap)
+        drawable.setBounds(0,0,bitmap.width,bitmap.height)
+        drawable.draw(canvas)
+        return bitmap
+    }
+    /**
+     *
+     *  I have no idea how this works
+     */
     inner class map_animate(val marker: Marker?, val oldpos : LatLng?, val newpos: LatLng, val handler: Handler) : Runnable {
         val start : Long = SystemClock.uptimeMillis()
         val interpolator = AccelerateDecelerateInterpolator()
@@ -188,7 +192,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
             }
         }
     }
-
 
     fun load_bus_into_ui(map: GoogleMap?){
         val markerList = mutableMapOf<String, Marker?>()
