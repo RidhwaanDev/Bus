@@ -206,17 +206,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
         return false
     }
     
-    private suspend fun loadDrawable(busText: String): BitmapDescriptor {
-        val deferred_drawable : Deferred<BusDrawable> = GlobalScope.async {
-            delay(1000L)
-            BusDrawable(busText)
-        }
-        val final_drawable = deferred_drawable.await()
-        val final_icon: BitmapDescriptor = final_drawable.getMarkerIconFromDrawable()
-        return final_icon
-
-    }
-
     override fun onDestroy() {
         mMapView.onDestroy()
         super.onDestroy()
