@@ -78,7 +78,13 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
         mMap?.moveCamera(CameraUpdateFactory.newLatLng(nb))
 
 
-        mMapViewModel.busRepository.getProperBus().observe(this, Observer { result -> result?.forEach { item -> println("${item.busName} , ${item.location} ") } })
+        mMapViewModel.busRepository.getProperBus().observe(this, Observer { result -> result?.forEach { item ->
+
+            val marker = mMap?.addMarker(MarkerOptions().title(item.busName).position(LatLng(item.location.lat, item.location.lng)))
+            marker?.setIcon(BitmapDescriptorFactory.fromBitmap(drawableToBitmap(R.drawable.ic_stop_temp)))
+
+
+        } })
 
 
 
@@ -96,41 +102,38 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
 
                         val marker = mMap?.addMarker(MarkerOptions().title(item.name).position(LatLng(item.location.lat, item.location.lng)))
                         marker?.setIcon(BitmapDescriptorFactory.fromBitmap(drawableToBitmap(R.drawable.ic_stop_temp)))
-
-
                     }
             }
-
         })
 
 
-//        val colors = listOf(Color.BLACK,Color.BLUE,Color.RED,Color.MAGENTA)
-//        val route = "Route EE"
-//        val options = PolylineOptions()
-//
-//        mMapViewModel.loadRoutes()?.observe(this, Observer { routes ->
-//           routes
-//               ?.filter { it.is_active }
-//               ?.filter { it.long_name.equals(route)}
-//               ?.forEach { route ->
-//                   Observable.just(route.stops)
-//                       .flatMapIterable { it }
-//                       .buffer(2)
-//                       .subscribe ({ item ->
-//                                options.add(routeid_id_2_location.get(item.get(0)))
-//                                    .add(routeid_id_2_location.get(item.get(1)))
-//                                    .color(colors[3])
-//                                    .width(9f)
-//
-//                                    }
-//
-//                           , {t: Throwable ->  t.printStackTrace()})
-//
-//               }
-//
-//            mMap?.addPolyline(options)
-//
-//        })
+        val colors = listOf(Color.BLACK,Color.BLUE,Color.RED,Color.MAGENTA)
+        val route = "Route EE"
+        val options = PolylineOptions()
+
+        mMapViewModel.loadRoutes()?.observe(this, Observer { routes ->
+           routes
+               ?.filter { it.is_active }
+               ?.filter { it.long_name.equals(route)}
+               ?.forEach { route ->
+                   Observable.just(route.stops)
+                       .flatMapIterable { it }
+                       .buffer(2)
+                       .subscribe ({ item ->
+                                options.add(routeid_id_2_location.get(item.get(0)))
+                                    .add(routeid_id_2_location.get(item.get(1)))
+                                    .color(colors[3])
+                                    .width(9f)
+
+                                    }
+
+                           , {t: Throwable ->  t.printStackTrace()})
+
+               }
+
+            mMap?.addPolyline(options)
+
+        })
 
         load_bus_into_ui(map)
         load_stop_into_ui(map)
