@@ -32,62 +32,81 @@ import kotlin.collections.ArrayList
 @Singleton
 class BusRepository @Inject constructor( private val busService: VehiclesService, private val busStopsService: StopsService, private val routesService: RoutesService) {
 
+    fun getVehicleLocations(): LiveData<Map<String, Vehicles.Location>> {
+        val mutLiveData = MutableLiveData<Map<String, Vehicles.Location>>()
+        val locationMap = mutableMapOf<String, Vehicles.Location>()
 
-    fun getVehicleLocations() : LiveData<Map<String,Vehicles.Location>> {
-         val mutLiveData = MutableLiveData<Map<String,Vehicles.Location>>()
-         val locationMap =  mutableMapOf<String,Vehicles.Location>()
+        Observable.interval(0, 5, TimeUnit.SECONDS)
+            .flatMap { busService.getVehicles(Config.agencyID, Config.nbCampus) }
+            .subscribeOn(Schedulers.io())
+            .map { it.data.getValue(Config.agencyID.toString()) }
+            .subscribe({ item ->
+                item.forEach { locationMap.put(it.vehicleId, it.location) }
+                mutLiveData.postValue(locationMap)
+            }
+                , { t: Throwable? -> t?.printStackTrace() })
 
-        Observable.interval(0,5, TimeUnit.SECONDS)
-                .flatMap { busService.getVehicles(Config.agencyID, Config.nbCampus) }
-                .subscribeOn(Schedulers.io())
-                .map { it.data.getValue(Config.agencyID.toString())}
-                .subscribe({item -> item.forEach { locationMap.put(it.vehicleId,it.location) }
-                    mutLiveData.postValue(locationMap)
+        return mutLiveData
+    }
+
+    fun zipBus(): Observable<Vehicles.Response> {
+
+        val busObservable: Observable<Vehicles.Response> = busService.getVehicles(Config.agencyID, Config.nbCampus)
+        val routesObservable: Observable<Routes.Response> = routesService.getRoutes(Config.agencyID, Config.nbCampus)
+
+        val routeid_to_bus_name = mutableMapOf<String, String>()
+        val result: Observable<Vehicles.Response> = Observable.zip(
+            busObservable,
+            routesObservable,
+            object : BiFunction<Vehicles.Response, Routes.Response, Vehicles.Response> {
+
+                override fun apply(t1: Vehicles.Response, t2: Routes.Response): Vehicles.Response {
+
+                    t2.data.getValue(Config.agencyID.toString())
+                        .forEach { route -> routeid_to_bus_name.put(route.routeId, route.long_name) }
+
+                    for (vehicle in t1.data.getValue(Config.agencyID.toString())) {
+                        vehicle.busName = routeid_to_bus_name[vehicle.routeId]!!
+                    }
+
+                    return t1
                 }
-                , {t: Throwable? -> t?.printStackTrace()})
 
-            return mutLiveData
-        }
-     fun zipBus(): Observable<Vehicles.Response> {
+            })
 
-         val busObservable: Observable<Vehicles.Response> = busService.getVehicles(Config.agencyID,Config.nbCampus)
-         val routesObservable: Observable<Routes.Response> = routesService.getRoutes(Config.agencyID,Config.nbCampus)
+        return result
+    }
 
-         val routeid_to_bus_name = mutableMapOf<String,String>()
-         val result: Observable<Vehicles.Response> = Observable.zip(busObservable,routesObservable, object: BiFunction<Vehicles.Response,Routes.Response,Vehicles.Response>{
-             override fun apply(t1: Vehicles.Response, t2: Routes.Response): Vehicles.Response {
-                 t2.data.getValue(Config.agencyID.toString()).forEach { route ->  routeid_to_bus_name.put(route.routeId, route.long_name)}
-                 for (vehicle in t1.data.getValue(Config.agencyID.toString())) {
-                     vehicle.busName = routeid_to_bus_name[vehicle.routeId]!!
-                 }
-                 return t1
-             }
-         })
+    fun getProperBus(): LiveData<List<Vehicles.Vehicle>> {
 
-         return result
-     }
-    fun getProperBus() : LiveData<List<Vehicles.Vehicle>> {
         val mutLiveData = MutableLiveData<List<Vehicles.Vehicle>>()
         val listOfBus = mutableListOf<Vehicles.Vehicle>()
-        Observable.interval(0,5,TimeUnit.SECONDS)
-            .subscribe { zipBus().subscribeOn(Schedulers.io()).subscribe { result ->
-                for (vehicle in result.data.getValue(Config.agencyID.toString())) {
-                    listOfBus.add(vehicle)
-                    mutLiveData.postValue(listOfBus)
 
-                }}}
+        Observable.interval(0, 5, TimeUnit.SECONDS)
+            .subscribe {
+                zipBus().subscribeOn(Schedulers.io()).subscribe { result ->
+
+                    result.data.getValue(Config.agencyID.toString()).forEach { item ->
+                        listOfBus.add(item)
+
+                    }
+
+                    mutLiveData.postValue(listOfBus)
+                }
+            }
 
 
         return mutLiveData
     }
 
-    fun getBusStopLocations() : LiveData<List<Stops.Response>>? {
+    fun getBusStopLocations(): LiveData<List<Stops.Response>>? {
+
         val listOfStops = mutableListOf<Stops.Response>()
         val mutLiveData = MutableLiveData<List<Stops.Response>>()
 
-        busStopsService.getVehicles(Config.agencyID,Config.nbCampus)
+        busStopsService.getVehicles(Config.agencyID, Config.nbCampus)
             .subscribeOn(Schedulers.io())
-            .subscribe{result ->
+            .subscribe { result ->
                 listOfStops.add(result)
                 mutLiveData.postValue(listOfStops)
 
@@ -98,7 +117,7 @@ class BusRepository @Inject constructor( private val busService: VehiclesService
 
     }
 
-    fun getRoutes() : LiveData<List<Routes.Route>>? {
+    fun getRoutes(): LiveData<List<Routes.Route>>? {
         val mutLiveData = MutableLiveData<List<Routes.Route>>()
 
         routesService.getRoutes(Config.agencyID, Config.nbCampus)
@@ -107,10 +126,9 @@ class BusRepository @Inject constructor( private val busService: VehiclesService
             .subscribe({
                 mutLiveData.postValue(it)
             },
-                {t: Throwable? -> t?.printStackTrace()})
+                { t: Throwable? -> t?.printStackTrace() })
 
         return mutLiveData
     }
-
 
 }

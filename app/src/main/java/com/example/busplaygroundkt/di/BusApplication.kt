@@ -21,5 +21,4 @@ class BusApplication : Application()  {
             .build()
     }
 
-
 }

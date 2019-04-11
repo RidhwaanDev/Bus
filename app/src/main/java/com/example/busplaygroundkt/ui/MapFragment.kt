@@ -34,7 +34,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
 
     private val markerList = mutableMapOf<String, Marker?>()
 
-
     private var mMap :GoogleMap? = null
     private val TAG = MapFragment::class.java.simpleName
 
@@ -69,7 +68,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
 
     }
 
-
     override fun onMapReady(map: GoogleMap?) {
         val nb = LatLng(Config.NJ_LAT, Config.NJ_LNG)
         val listOfCoordsForLine = mutableListOf<LatLng>()
@@ -77,19 +75,26 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
         mMap?.setOnMarkerClickListener(this)
         mMap?.moveCamera(CameraUpdateFactory.newLatLng(nb))
 
-            val marker = mMap?.addMarker(MarkerOptions().position(LatLng(Config.NJ_LAT, Config.NJ_LNG)))
-           //  marker?.setIcon(BitmapDescriptorFactory.fromBitmap(drawableToBitmap(R.drawable.ic_stop_temp)))
-            marker?.setIcon(BitmapDescriptorFactory.fromBitmap(_draw().bitmap))
+        mMapViewModel.busRepository.getProperBus().observe(this, Observer { result -> result?.forEach { item ->
+            val routeid = item.routeId
+            val buspos = LatLng(item.location.lat , item.location.lng)
+            val busname = item.busName.removePrefix("Route ")
 
+            if(markerList[routeid] != null){
 
+                var marker = markerList[routeid]
 
-//        mMapViewModel.busRepository.getProperBus().observe(this, Observer { result -> result?.forEach { item ->
-//
-//            val marker = mMap?.addMarker(MarkerOptions().title(item.busName).position(LatLng(item.location.lat, item.location.lng)))
-//            marker?.setIcon(BitmapDescriptorFactory.fromBitmap(drawableToBitmap(R.drawable.ic_stop_temp)))
-//
-//
-//        } })
+                //  change pos smoothly
+                val handler = Handler()
+                handler.post(map_animate(marker,marker?.position,buspos,handler))
+
+            } else {
+                val marker= mMap?.addMarker(MarkerOptions().position(buspos).title(routeid))
+                marker?.setIcon(BitmapDescriptorFactory.fromBitmap(_draw(busname).bitmap))
+                markerList[routeid] = marker
+            }
+
+        } })
 //
 //
 //
@@ -158,7 +163,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
 //                } else {
 //
 //                    val marker= mMap?.addMarker(MarkerOptions().position(LatLng(bus.lat, bus.lng)).title(routeid))
-//                    marker?.setIcon(BitmapDescriptorFactory.fromBitmap(drawableToBitmap(R.drawable.ic_bus_temp)))
+//                    marker?.setIcon(BitmapDescriptorFactory.fromBitmap(_draw().bitmap))
 //                    markerList.put(routeid,marker)
 //                }
 //            }
@@ -170,23 +175,26 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
         val bitmap = Bitmap.createBitmap(128,128,Bitmap.Config.ARGB_8888)
         val drawable  = resources.getDrawable(res)
         val canvas = Canvas(bitmap)
-
         drawable.setBounds(0,0,bitmap.width,bitmap.height)
         drawable.draw(canvas)
 
         return bitmap
     }
 
-    fun _draw() : BitmapDrawable{
+    fun _draw( busName : String) : BitmapDrawable{
         val bitmap : Bitmap = drawableToBitmap(R.drawable.ic_bus_temp)
         val paint = Paint().apply { style = Paint.Style.FILL
-                                    color = Color.BLACK
-                                    textSize = 20f
+            color = Color.BLACK
+            textSize = 12f
+            textAlign = Paint.Align.CENTER
+            typeface = Typeface.DEFAULT_BOLD
         }
 
+        val width : Float = 0f + bitmap.width / 2
         val height : Float = 0f + bitmap.height / 2
+
         val canvas = Canvas(bitmap)
-        canvas.drawText("hello" ,0f, height , paint)
+        canvas.drawText(busName , width , height , paint)
         return BitmapDrawable(context.resources,bitmap)
 
     }
