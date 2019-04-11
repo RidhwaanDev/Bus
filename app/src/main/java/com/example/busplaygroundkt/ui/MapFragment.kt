@@ -2,8 +2,8 @@ package com.example.busplaygroundkt.ui
 
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
-import android.graphics.Bitmap
-import android.graphics.Canvas
+import android.graphics.*
+import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.view.LayoutInflater
@@ -18,7 +18,6 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.*
 import io.reactivex.Observable
 import com.google.android.gms.maps.model.PolylineOptions
-import android.graphics.Color
 import com.example.busplaygroundkt.ui.components.BusDrawable
 import kotlinx.coroutines.*
 import android.os.SystemClock
@@ -32,6 +31,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
 
     private lateinit var mMapViewModel: MapViewModel
     private lateinit var mMapView: MapView
+
     private val markerList = mutableMapOf<String, Marker?>()
 
 
@@ -77,100 +77,120 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
         mMap?.setOnMarkerClickListener(this)
         mMap?.moveCamera(CameraUpdateFactory.newLatLng(nb))
 
-
-        mMapViewModel.busRepository.getProperBus().observe(this, Observer { result -> result?.forEach { item ->
-
-            val marker = mMap?.addMarker(MarkerOptions().title(item.busName).position(LatLng(item.location.lat, item.location.lng)))
-            marker?.setIcon(BitmapDescriptorFactory.fromBitmap(drawableToBitmap(R.drawable.ic_stop_temp)))
-
-
-        } })
+            val marker = mMap?.addMarker(MarkerOptions().position(LatLng(Config.NJ_LAT, Config.NJ_LNG)))
+           //  marker?.setIcon(BitmapDescriptorFactory.fromBitmap(drawableToBitmap(R.drawable.ic_stop_temp)))
+            marker?.setIcon(BitmapDescriptorFactory.fromBitmap(_draw().bitmap))
 
 
 
-        val routeid_id_2_location = mutableMapOf<String, LatLng>()
+//        mMapViewModel.busRepository.getProperBus().observe(this, Observer { result -> result?.forEach { item ->
+//
+//            val marker = mMap?.addMarker(MarkerOptions().title(item.busName).position(LatLng(item.location.lat, item.location.lng)))
+//            marker?.setIcon(BitmapDescriptorFactory.fromBitmap(drawableToBitmap(R.drawable.ic_stop_temp)))
+//
+//
+//        } })
+//
+//
+//
+//        val routeid_id_2_location = mutableMapOf<String, LatLng>()
+//
+//        mMapViewModel.loadBusStops()?.observe(this, Observer { result ->
+//            result?.forEach { response ->
+//                Observable.just(response.data)
+//                    .flatMapIterable { it }
+//                    .subscribe { item ->
+//                        println( "name" + " " + item.location)
+//                        if(routeid_id_2_location.get(item.stopID) == null){
+//                            routeid_id_2_location.put(item.stopID, LatLng(item.location.lat,item.location.lng))
+//                        }
+//
+//                        val marker = mMap?.addMarker(MarkerOptions().title(item.name).position(LatLng(item.location.lat, item.location.lng)))
+//                        marker?.setIcon(BitmapDescriptorFactory.fromBitmap(drawableToBitmap(R.drawable.ic_stop_temp)))
+//                    }
+//            }
+//        })
 
-        mMapViewModel.loadBusStops()?.observe(this, Observer { result ->
-            result?.forEach { response ->
-                Observable.just(response.data)
-                    .flatMapIterable { it }
-                    .subscribe { item ->
-                        println( "name" + " " + item.location)
-                        if(routeid_id_2_location.get(item.stopID) == null){
-                            routeid_id_2_location.put(item.stopID, LatLng(item.location.lat,item.location.lng))
-                        }
 
-                        val marker = mMap?.addMarker(MarkerOptions().title(item.name).position(LatLng(item.location.lat, item.location.lng)))
-                        marker?.setIcon(BitmapDescriptorFactory.fromBitmap(drawableToBitmap(R.drawable.ic_stop_temp)))
-                    }
-            }
-        })
-
-
-        val colors = listOf(Color.BLACK,Color.BLUE,Color.RED,Color.MAGENTA)
-        val route = "Route EE"
-        val options = PolylineOptions()
-
-        mMapViewModel.loadRoutes()?.observe(this, Observer { routes ->
-           routes
-               ?.filter { it.is_active }
-               ?.filter { it.long_name.equals(route)}
-               ?.forEach { route ->
-                   Observable.just(route.stops)
-                       .flatMapIterable { it }
-                       .buffer(2)
-                       .subscribe ({ item ->
-                                options.add(routeid_id_2_location.get(item.get(0)))
-                                    .add(routeid_id_2_location.get(item.get(1)))
-                                    .color(colors[3])
-                                    .width(9f)
-
-                                    }
-
-                           , {t: Throwable ->  t.printStackTrace()})
-
-               }
-
-            mMap?.addPolyline(options)
-
-        })
+//        val colors = listOf(Color.BLACK,Color.BLUE,Color.RED,Color.MAGENTA)
+//        val route = "Route EE"
+//        val options = PolylineOptions()
+//
+//        mMapViewModel.loadRoutes()?.observe(this, Observer { routes ->
+//           routes
+//               ?.filter { it.is_active }
+//               ?.filter { it.long_name.equals(route)}
+//               ?.forEach { route ->
+//                   Observable.just(route.stops)
+//                       .flatMapIterable { it }
+//                       .buffer(2)
+//                       .subscribe ({ item ->
+//                                options.add(routeid_id_2_location.get(item.get(0)))
+//                                    .add(routeid_id_2_location.get(item.get(1)))
+//                                    .color(colors[3])
+//                                    .width(9f)
+//
+//                                    }
+//
+//                           , {t: Throwable ->  t.printStackTrace()})
+//
+//               }
+//
+//            mMap?.addPolyline(options)
+//
+//        })
 
         load_bus_into_ui(map)
         load_stop_into_ui(map)
         load_route_into_ui(map)
 
-        mMapViewModel.loadBusData()?.observe(this, Observer { vehicles ->
-            vehicles?.forEach { (routeid,bus) ->
-                if(markerList[routeid] != null){
-
-                    var marker = markerList[routeid]
-                    val newpos = LatLng(bus.lat,bus.lng)
-
-                    //  change pos smoothly
-                    val handler = Handler()
-                    handler.post(map_animate(marker,marker?.position,newpos,handler))
-
-                } else {
-
-                    val marker= mMap?.addMarker(MarkerOptions().position(LatLng(bus.lat, bus.lng)).title(routeid))
-                    marker?.setIcon(BitmapDescriptorFactory.fromBitmap(drawableToBitmap(R.drawable.ic_bus_temp)))
-                    markerList.put(routeid,marker)
-                }
-            }
-        })
+//        mMapViewModel.loadBusData()?.observe(this, Observer { vehicles ->
+//            vehicles?.forEach { (routeid,bus) ->
+//                if(markerList[routeid] != null){
+//
+//                    var marker = markerList[routeid]
+//                    val newpos = LatLng(bus.lat,bus.lng)
+//
+//                    //  change pos smoothly
+//                    val handler = Handler()
+//                    handler.post(map_animate(marker,marker?.position,newpos,handler))
+//
+//                } else {
+//
+//                    val marker= mMap?.addMarker(MarkerOptions().position(LatLng(bus.lat, bus.lng)).title(routeid))
+//                    marker?.setIcon(BitmapDescriptorFactory.fromBitmap(drawableToBitmap(R.drawable.ic_bus_temp)))
+//                    markerList.put(routeid,marker)
+//                }
+//            }
+//        })
     }
 
-    fun drawableToBitmap( res: Int): Bitmap{
+    fun drawableToBitmap( res: Int): Bitmap {
 
-        val bitmap = Bitmap.createBitmap(32,32,Bitmap.Config.ARGB_8888)
+        val bitmap = Bitmap.createBitmap(128,128,Bitmap.Config.ARGB_8888)
         val drawable  = resources.getDrawable(res)
         val canvas = Canvas(bitmap)
+
         drawable.setBounds(0,0,bitmap.width,bitmap.height)
         drawable.draw(canvas)
+
         return bitmap
     }
+
+    fun _draw() : BitmapDrawable{
+        val bitmap : Bitmap = drawableToBitmap(R.drawable.ic_bus_temp)
+        val paint = Paint().apply { style = Paint.Style.FILL
+                                    color = Color.BLACK
+                                    textSize = 20f
+        }
+
+        val height : Float = 0f + bitmap.height / 2
+        val canvas = Canvas(bitmap)
+        canvas.drawText("hello" ,0f, height , paint)
+        return BitmapDrawable(context.resources,bitmap)
+
+    }
     /**
-     *
      *  I have no idea how this works
      */
     inner class map_animate(val marker: Marker?, val oldpos : LatLng?, val newpos: LatLng, val handler: Handler) : Runnable {
