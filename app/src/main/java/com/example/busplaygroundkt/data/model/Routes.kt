@@ -12,7 +12,8 @@ object Routes {
                        @SerializedName("color")     val color:String,
                        @SerializedName("is_active") val is_active: Boolean,
                        @SerializedName("long_name") val long_name:String,
-                        @SerializedName("stops")    val stops: List<String>
+                       @SerializedName("segments")    val segments: List<List<String>>,
+                       @SerializedName("stops")    val stops: List<String>
     )
 }
 
