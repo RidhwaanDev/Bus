@@ -2,6 +2,7 @@ package com.example.busplaygroundkt.di
 
 import com.example.busplaygroundkt.Config
 import com.example.busplaygroundkt.data.remote.RoutesService
+import com.example.busplaygroundkt.data.remote.SegmentsService
 import com.example.busplaygroundkt.data.remote.StopsService
 import com.example.busplaygroundkt.data.remote.VehiclesService
 import dagger.Module
@@ -45,6 +46,10 @@ class RemoteModule {
 
     @Provides @Singleton
     fun provideRoutesService(@Named("Retrofit") r: Retrofit): RoutesService = r.create(RoutesService::class.java)
+
+    @Provides @Singleton
+    fun provideSegmentsService(@Named("Retrofit") r: Retrofit): SegmentsService = r.create(SegmentsService::class.java)
+
 
 
 

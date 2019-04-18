@@ -109,8 +109,8 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
                             routeid_id_2_location.put(item.stopID, LatLng(item.location.lat,item.location.lng))
                         }
 
-                        val marker = mMap?.addMarker(MarkerOptions().title(item.name).position(LatLng(item.location.lat, item.location.lng)))
-                        marker?.setIcon(BitmapDescriptorFactory.fromBitmap(drawableToBitmap(R.drawable.ic_stop_temp)))
+                    //    val marker = mMap?.addMarker(MarkerOptions().title(item.name).position(LatLng(item.location.lat, item.location.lng)))
+                      //  marker?.setIcon(BitmapDescriptorFactory.fromBitmap(drawableToBitmap(R.drawable.ic_stop_temp)))
                     }
             }
         })
@@ -127,13 +127,18 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
                     Observable.just(route.stops)
 //                       .flatMapIterable { it }
                         .subscribe ({ item ->
+                                item.forEach { id ->
 
-                                PolyUtil.encode()
-                            mMap?.addPolyline(options.ad)
+                                    routeid_id_2_location[id]
+                                    val marker = mMap?.addMarker(MarkerOptions().position(routeid_id_2_location[id]!!))
+                                    options.add(routeid_id_2_location[id])
+
+
+                                }
+
                         }
 
                             , {t: Throwable ->  t.printStackTrace()})
-
                 }
 
             mMap?.addPolyline(options)

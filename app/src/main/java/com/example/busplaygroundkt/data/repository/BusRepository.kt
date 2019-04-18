@@ -6,6 +6,7 @@ import android.support.annotation.MainThread
 import com.example.busplaygroundkt.Config
 import com.example.busplaygroundkt.P
 import com.example.busplaygroundkt.data.model.Routes
+import com.example.busplaygroundkt.data.model.Segments
 import com.example.busplaygroundkt.data.model.Stops
 import com.example.busplaygroundkt.data.model.Vehicles
 import com.example.busplaygroundkt.data.remote.RoutesService
@@ -131,4 +132,7 @@ class BusRepository @Inject constructor( private val busService: VehiclesService
         return mutLiveData
     }
 
+    fun getSegments() : LiveData<List<Segments.Response>>? {
+        
+    }
 }
