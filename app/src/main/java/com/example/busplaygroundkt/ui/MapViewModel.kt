@@ -48,6 +48,11 @@ class MapViewModel : ViewModel(), LifecycleObserver{
         return liveRouteData
     }
 
+    fun loadSegmentsForRoute(long_name: String){
+        busRepository.getSegments(long_name)
+
+    }
+
     private fun initializeDagger() = BusApplication.appComponent.inject(this)
 
 

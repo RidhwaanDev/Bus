@@ -10,6 +10,7 @@ import com.example.busplaygroundkt.data.model.Segments
 import com.example.busplaygroundkt.data.model.Stops
 import com.example.busplaygroundkt.data.model.Vehicles
 import com.example.busplaygroundkt.data.remote.RoutesService
+import com.example.busplaygroundkt.data.remote.SegmentsService
 import com.example.busplaygroundkt.data.remote.StopsService
 import com.example.busplaygroundkt.data.remote.VehiclesService
 import com.example.busplaygroundkt.di.AppComponent
@@ -31,7 +32,12 @@ import kotlin.collections.ArrayList
  */
 
 @Singleton
-class BusRepository @Inject constructor( private val busService: VehiclesService, private val busStopsService: StopsService, private val routesService: RoutesService) {
+class BusRepository @Inject constructor( private val busService: VehiclesService,
+                                         private val busStopsService: StopsService,
+                                         private val routesService: RoutesService,
+                                         private val segmentsService: SegmentsService
+
+                                        ) {
 
     fun getVehicleLocations(): LiveData<Map<String, Vehicles.Location>> {
         val mutLiveData = MutableLiveData<Map<String, Vehicles.Location>>()
@@ -72,7 +78,6 @@ class BusRepository @Inject constructor( private val busService: VehiclesService
 
                     return t1
                 }
-
             })
 
         return result
@@ -113,9 +118,7 @@ class BusRepository @Inject constructor( private val busService: VehiclesService
 
             }
 
-
         return mutLiveData
-
     }
 
     fun getRoutes(): LiveData<List<Routes.Route>>? {
@@ -132,7 +135,23 @@ class BusRepository @Inject constructor( private val busService: VehiclesService
         return mutLiveData
     }
 
-    fun getSegments() : LiveData<List<Segments.Response>>? {
-        
+    fun getSegments(long_name: String ) : LiveData<List<String>>? {
+        routesService.getRoutes(Config.agencyID,Config.nbCampus)
+            .subscribeOn(Schedulers.io())
+            .map{it.data.getValue(Config.agencyID.toString())}
+            .subscribe { routes_list ->
+                println("ROUTES LIST $routes_list")
+                Observable.just(routes_list)
+                    .flatMapIterable { it }
+                    .filter{it.long_name == long_name}
+                    .subscribe { result ->
+                      segmentsService.getSegments(Config.agencyID,Config.nbCampus,long_name)
+                          .subscribeOn(Schedulers.io())
+                          .map { it.data.getValue(Config.agencyID.toString()) }
+                          .subscribe { result -> println("final result $result") }
+                    }
+
+            }
+        return null
     }
 }

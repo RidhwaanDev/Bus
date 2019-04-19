@@ -20,7 +20,6 @@ class BusDrawable(val busId: String) : Drawable() {
         val radius: Float = Math.min(width, height).toFloat() / 2f
         canvas.drawCircle((width / 2).toFloat(), (height / 2).toFloat(), radius, redPaint)
         canvas.drawText(busId, (width / 2).toFloat(), (height / 2).toFloat(), redPaint)
-
     }
 
     fun getMarkerIconFromDrawable() : BitmapDescriptor {
