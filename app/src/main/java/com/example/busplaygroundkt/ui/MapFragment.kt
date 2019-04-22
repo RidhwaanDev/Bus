@@ -26,6 +26,7 @@ import android.os.Handler
 import android.view.animation.AccelerateDecelerateInterpolator
 import com.example.busplaygroundkt.data.repository.BusRepository
 import com.google.maps.android.PolyUtil
+import java.lang.NullPointerException
 import java.lang.Runnable
 
 
@@ -71,13 +72,27 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
     }
 
     override fun onMapReady(map: GoogleMap?) {
+
         val nb = LatLng(Config.NJ_LAT, Config.NJ_LNG)
         val listOfCoordsForLine = mutableListOf<LatLng>()
+        val route_f = "4012626"
+
         mMap = map
         mMap?.setOnMarkerClickListener(this)
         mMap?.moveCamera(CameraUpdateFactory.newLatLng(nb))
-        mMapViewModel.busRepository.getSegments("Route H")
+        val routeline  = PolylineOptions().color(Color.RED).width(5f)
 
+        mMapViewModel.loadSegmentsForRoute(route_f)?.observe(this, Observer {
+            it?.data?.forEach { key, value ->
+                println(it.data.size)
+                routeline.addAll(PolyUtil.decode(value))
+
+            }
+            mMap?.addPolyline(routeline)
+
+        })
+
+        // change to to use biewmodel
 //        mMapViewModel.busRepository.getProperBus().observe(this, Observer { result -> result?.forEach { item ->
 //            val routeid = item.routeId
 //            val buspos = LatLng(item.location.lat , item.location.lng)
@@ -111,12 +126,12 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
 //                            routeid_id_2_location.put(item.stopID, LatLng(item.location.lat,item.location.lng))
 //                        }
 //
-//                    //    val marker = mMap?.addMarker(MarkerOptions().title(item.name).position(LatLng(item.location.lat, item.location.lng)))
-//                      //  marker?.setIcon(BitmapDescriptorFactory.fromBitmap(drawableToBitmap(R.drawable.ic_stop_temp)))
+//                        val marker = mMap?.addMarker(MarkerOptions().title(item.name).position(LatLng(item.location.lat, item.location.lng)))
+//                        marker?.setIcon(BitmapDescriptorFactory.fromBitmap(drawableToBitmap(R.drawable.ic_stop_temp)))
 //                    }
 //            }
 //        })
-////
+//
 //
 //        val colors = listOf(Color.BLACK,Color.BLUE,Color.RED,Color.MAGENTA)
 //        val route = "Route EE"

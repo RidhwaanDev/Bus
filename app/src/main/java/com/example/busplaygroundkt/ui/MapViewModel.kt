@@ -5,6 +5,7 @@ import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModel
 import com.example.busplaygroundkt.data.model.Routes
+import com.example.busplaygroundkt.data.model.Segments
 import com.example.busplaygroundkt.data.model.Stops
 import com.example.busplaygroundkt.data.model.Vehicles
 import com.example.busplaygroundkt.data.repository.BusRepository
@@ -16,6 +17,8 @@ class MapViewModel : ViewModel(), LifecycleObserver{
     private var liveBusData : LiveData<Map<String, Vehicles.Location>>? = null
     private var liveBusStopData : LiveData<List<Stops.Response>>? = null
     private var liveRouteData: LiveData<List<Routes.Route>>? = null
+    private var liveSegmentData: LiveData<Segments.Response>? = null
+
 
 
     @Inject
@@ -42,14 +45,18 @@ class MapViewModel : ViewModel(), LifecycleObserver{
     }
 
     fun loadRoutes() : LiveData<List<Routes.Route>>?{
-        liveRouteData = null;
+        liveRouteData = null
         liveRouteData = MutableLiveData<List<Routes.Route>>()
         liveRouteData = busRepository.getRoutes()
         return liveRouteData
     }
 
-    fun loadSegmentsForRoute(long_name: String){
-        busRepository.getSegments(long_name)
+    fun loadSegmentsForRoute(long_name: String): LiveData <Segments.Response>? {
+        liveSegmentData = null
+        liveSegmentData = MutableLiveData<Segments.Response>()
+        liveSegmentData = busRepository.getSegments(long_name)
+        return liveSegmentData
+
 
     }
 
