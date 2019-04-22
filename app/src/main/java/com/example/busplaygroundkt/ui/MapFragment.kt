@@ -84,16 +84,11 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
         mMap?.moveCamera(CameraUpdateFactory.newLatLng(nb))
 
         mMapViewModel.loadSegmentsForRoute(route_f)?.observe(this, Observer {
-
             val bounds = LatLngBounds.Builder()
             val map: Map<String,String>? = it?.data
             map?.forEach { key, segment ->
-
-
                 mMap?.addPolyline(PolylineOptions().addAll(PolyUtil.decode(segment)))
                 PolyUtil.decode(segment).forEach { bounds.include(it) }
-
-
             }
 
             bounds.build()
@@ -102,44 +97,45 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
 
 
         // change to to use biewmodel
-//        mMapViewModel.busRepository.getProperBus().observe(this, Observer { result -> result?.forEach { item ->
-//            val routeid = item.routeId
-//            val buspos = LatLng(item.location.lat , item.location.lng)
-//            val busname = item.busName.removePrefix("Route ")
+        mMapViewModel.busRepository.getProperBus().observe(this, Observer { result -> result?.forEach { item ->
+            val routeid = item.routeId
+            val buspos = LatLng(item.location.lat , item.location.lng)
+            val busname = item.busName.removePrefix("Route ")
+
+            println(routeid)
+            for((key,value) in markerList){
+                if (routeid == key)
+                    println("its equals")
+                else {
+                    println("no bueno")
+                }
+
+                if(key == routeid){
+                    value?.setIcon(BitmapDescriptorFactory.fromBitmap(_draw(busname).bitmap))
+                    value?.title = busname
+                }
+            }
+
+        } })
 //
-//            println(routeid)
-//            for((key,value) in markerList){
-//                if (routeid == key)
-//                    println("its equals")
-//                else {
-//                    println("no bueno")
-//                }
-//
-//                if(key == routeid){
-//                    value?.setIcon(BitmapDescriptorFactory.fromBitmap(_draw(busname).bitmap))
-//                }
-//            }
-//
-//        } })
 //
 //
-//
-//        val routeid_id_2_location = mutableMapOf<String, LatLng>()
-//
-//        mMapViewModel.loadBusStops()?.observe(this, Observer { result ->
-//            result?.forEach { response ->
-//                Observable.just(response.data)
-//                    .flatMapIterable { it }
-//                    .subscribe { item ->
-//                        if(routeid_id_2_location.get(item.stopID) == null){
-//                            routeid_id_2_location.put(item.stopID, LatLng(item.location.lat,item.location.lng))
-//                        }
-//
-//                        val marker = mMap?.addMarker(MarkerOptions().title(item.name).position(LatLng(item.location.lat, item.location.lng)))
-//                        marker?.setIcon(BitmapDescriptorFactory.fromBitmap(drawableToBitmap(R.drawable.ic_stop_temp)))
-//                    }
-//            }
-//        })
+        val routeid_id_2_location = mutableMapOf<String, LatLng>()
+
+        mMapViewModel.loadBusStops()?.observe(this, Observer { result ->
+            result?.forEach { response ->
+                Observable.just(response.data)
+                    .flatMapIterable { it }
+                    .subscribe { item ->
+                        if(routeid_id_2_location.get(item.stopID) == null){
+                            routeid_id_2_location.put(item.stopID, LatLng(item.location.lat,item.location.lng))
+                        }
+
+                        val marker = mMap?.addMarker(MarkerOptions().title(item.name).position(LatLng(item.location.lat, item.location.lng)))
+                        marker?.setIcon(BitmapDescriptorFactory.fromBitmap(drawableToBitmap(R.drawable.ic_stop_temp)))
+                    }
+            }
+        })
 //
 //
 //        val colors = listOf(Color.BLACK,Color.BLUE,Color.RED,Color.MAGENTA)
@@ -172,25 +168,25 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
 //        })
 
 
-//        mMapViewModel.loadBusData()?.observe(this, Observer { vehicles ->
-//            vehicles?.forEach { (routeid,bus) ->
-//                if(markerList[routeid] != null){
-//
-//                    var marker = markerList[routeid]
-//                    val newpos = LatLng(bus.lat,bus.lng)
-//
-//                    //  change pos smoothly
-//                    val handler = Handler()
-//                    handler.post(map_animate(marker,marker?.position,newpos,handler))
-//
-//                } else {
-//
-//                    val marker= mMap?.addMarker(MarkerOptions().position(LatLng(bus.lat, bus.lng)).title(routeid))
-//                    marker?.setIcon(BitmapDescriptorFactory.fromBitmap(_draw("").bitmap))
-//                    markerList.put(routeid,marker)
-//                }
-//            }
-//        })
+        mMapViewModel.loadBusData()?.observe(this, Observer { vehicles ->
+            vehicles?.forEach { (routeid,bus) ->
+                if(markerList[routeid] != null){
+
+                    var marker = markerList[routeid]
+                    val newpos = LatLng(bus.lat,bus.lng)
+
+                    //  change pos smoothly
+                    val handler = Handler()
+                    handler.post(map_animate(marker,marker?.position,newpos,handler))
+
+                } else {
+
+                    val marker= mMap?.addMarker(MarkerOptions().position(LatLng(bus.lat, bus.lng)).title(routeid))
+                    marker?.setIcon(BitmapDescriptorFactory.fromBitmap(_draw("").bitmap))
+                    markerList.put(routeid,marker)
+                }
+            }
+        })
     }
 
     fun drawableToBitmap( res: Int): Bitmap {

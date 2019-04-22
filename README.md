@@ -1,8 +1,10 @@
-![Screenshot](https://i.imgur.com/BOq8EEG.png)
+![Screenshot](https://i.imgur.com/7eam8NG.png)
 
 # Ruthers Bus App Rewrite 
 
-This is a playground to test and  play around with features for the  Rutgers App rewrite.
+This is a playground to test and  play around with features for the Rutgers App rewrite. The square are bus stops and
+the circles are busses.
+
 
 # Libraries used
 - RxJava
