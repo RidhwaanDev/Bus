@@ -23,6 +23,7 @@ import kotlinx.coroutines.*
 import android.os.SystemClock
 import com.google.android.gms.maps.model.Marker
 import android.os.Handler
+import android.util.Log
 import android.view.animation.AccelerateDecelerateInterpolator
 import com.example.busplaygroundkt.data.repository.BusRepository
 import com.google.maps.android.PolyUtil
@@ -42,6 +43,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
 
     companion object {
         fun newInstance() = MapFragment()
+        var counter = 0
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -80,15 +82,21 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
         mMap = map
         mMap?.setOnMarkerClickListener(this)
         mMap?.moveCamera(CameraUpdateFactory.newLatLng(nb))
-        val routeline  = PolylineOptions().color(Color.RED).width(5f)
-        mMapViewModel.loadSegmentsForRoute(route_f)?.observe(this, Observer {
-            it?.data?.forEach { key, value ->
-                println(value)
-                val bounds = LatLngBounds.Builder()
-                mMap?.addPolyline(routeline.addAll(PolyUtil.decode(value)))
 
-                // PolyUtil.decode(value).forEach { bounds.include(it) }
+        mMapViewModel.loadSegmentsForRoute(route_f)?.observe(this, Observer {
+
+            val bounds = LatLngBounds.Builder()
+            val map: Map<String,String>? = it?.data
+            map?.forEach { key, segment ->
+
+
+                mMap?.addPolyline(PolylineOptions().addAll(PolyUtil.decode(segment)))
+                PolyUtil.decode(segment).forEach { bounds.include(it) }
+
+
             }
+
+            bounds.build()
 
         })
 
