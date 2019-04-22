@@ -81,16 +81,17 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
         mMap?.setOnMarkerClickListener(this)
         mMap?.moveCamera(CameraUpdateFactory.newLatLng(nb))
         val routeline  = PolylineOptions().color(Color.RED).width(5f)
-
         mMapViewModel.loadSegmentsForRoute(route_f)?.observe(this, Observer {
             it?.data?.forEach { key, value ->
-                println(it.data.size)
-                routeline.addAll(PolyUtil.decode(value))
+                println(value)
+                val bounds = LatLngBounds.Builder()
+                mMap?.addPolyline(routeline.addAll(PolyUtil.decode(value)))
 
+                // PolyUtil.decode(value).forEach { bounds.include(it) }
             }
-            mMap?.addPolyline(routeline)
 
         })
+
 
         // change to to use biewmodel
 //        mMapViewModel.busRepository.getProperBus().observe(this, Observer { result -> result?.forEach { item ->
