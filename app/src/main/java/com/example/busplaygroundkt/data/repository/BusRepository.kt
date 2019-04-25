@@ -39,7 +39,7 @@ class BusRepository @Inject constructor( private val busService: VehiclesService
 
                                         ) {
 
-    fun getVehicleLocations(): LiveData<Map<String, Vehicles.Location>> {
+    fun getVehicleLocations(routeid: String?): LiveData<Map<String, Vehicles.Location>> {
         val mutLiveData = MutableLiveData<Map<String, Vehicles.Location>>()
         val locationMap = mutableMapOf<String, Vehicles.Location>()
 
@@ -48,7 +48,8 @@ class BusRepository @Inject constructor( private val busService: VehiclesService
             .subscribeOn(Schedulers.io())
             .map { it.data.getValue(Config.agencyID.toString()) }
             .subscribe({ item ->
-                item.forEach { locationMap.put(it.vehicleId, it.location) }
+                item.filter { it.routeId.equals(routeid) }
+                    .forEach { locationMap.put(it.vehicleId, it.location) }
                 mutLiveData.postValue(locationMap)
             }
                 , { t: Throwable? -> t?.printStackTrace() })

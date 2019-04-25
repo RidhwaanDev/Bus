@@ -28,11 +28,11 @@ class MapViewModel : ViewModel(), LifecycleObserver{
         initializeDagger()
     }
 
-    fun loadBusData(): LiveData<Map<String,Vehicles.Location>>? {
+    fun loadBusData(routeid : String?): LiveData<Map<String,Vehicles.Location>>? {
 
         liveBusData = null
         liveBusData = MutableLiveData<Map<String,Vehicles.Location>>()
-        liveBusData = busRepository.getVehicleLocations()
+        liveBusData = busRepository.getVehicleLocations(routeid)
 
         return liveBusData
     }

@@ -87,77 +87,22 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
 
         load_route_into_ui()
 
-
+        // assign a name to each marker
 //        mMapViewModel.busRepository.getProperBus().observe(this, Observer { result -> result?.forEach { item ->
 //            val routeid = item.routeId
 //            val buspos = LatLng(item.location.lat , item.location.lng)
 //            val busname = item.busName.removePrefix("Route ")
 //
-//            println(routeid)
 //            for((key,value) in markerList){
-//                if (routeid == key)
-//                    println("its equals")
-//                else {
-//                    println("no bueno")
-//                }
 //
 //                if(key == routeid){
 //                    value?.setIcon(BitmapDescriptorFactory.fromBitmap(_draw(busname).bitmap))
-//                    value?.title = busname
 //                }
 //            }
 //
 //        } })
 
 
-//
-//        val colors = listOf(Color.BLACK,Color.BLUE,Color.RED,Color.MAGENTA)
-//        val route = "Route EE"
-//        val options = PolylineOptions().color(Color.BLACK).width(9f)
-//
-//        mMapViewModel.loadRoutes()?.observe(this, Observer { routes ->
-//            routes
-//                ?.filter { it.is_active && it.long_name.equals(route)}
-//                ?.forEach { route ->
-//                    Observable.just(route.stops)
-////                       .flatMapIterable { it }
-//                        .subscribe ({ item ->
-//                                item.forEach { id ->
-//
-//                                    routeid_id_2_location[id]
-//                                    val marker = mMap?.addMarker(MarkerOptions().position(routeid_id_2_location[id]!!))
-//                                    options.add(routeid_id_2_location[id])
-//
-//
-//                                }
-//
-//                        }
-//
-//                            , {t: Throwable ->  t.printStackTrace()})
-//                }
-//
-//            mMap?.addPolyline(options)
-//
-//        })
-//        mMapViewModel.loadBusData()?.observe(this, Observer { vehicles ->
-//            vehicles?.forEach { (routeid,bus) ->
-//                if(markerList[routeid] != null){
-//
-//                    var marker = markerList[routeid]
-//                    val newpos = LatLng(bus.lat,bus.lng)
-//
-//                    //  change pos smoothly
-//                    val handler = Handler()
-//                    handler.post(map_animate(marker,marker?.position,newpos,handler))
-//
-//                } else {
-//
-//                    val marker= mMap?.addMarker(MarkerOptions().position(LatLng(bus.lat, bus.lng)).title(routeid))
-//                    marker?.setIcon(BitmapDescriptorFactory.fromBitmap(_draw("").bitmap))
-//                    markerList.put(routeid,marker)
-//                }
-//            }
-//        })
     }
 
     fun load_route_into_ui(){
@@ -174,25 +119,42 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
 
             val routeid_id_2_location = mutableMapOf<String, LatLng>()
 
+            mMapViewModel.loadBusData(segment_response?._routeid)?.observe(this, Observer { vehicles ->
+                vehicles?.forEach { (routeid,bus) ->
+                        if(markerList[routeid] != null){
+                            var marker = markerList[routeid]
+                            val newpos = LatLng(bus.lat,bus.lng)
+
+                            //  change pos smoothly
+                            val handler = Handler()
+                            handler.post(map_animate(marker,marker?.position,newpos,handler))
+
+                        } else {
+
+                            val marker= mMap?.addMarker(MarkerOptions().position(LatLng(bus.lat, bus.lng)).title(routeid))
+                            marker?.setIcon(BitmapDescriptorFactory.fromBitmap(_draw("").bitmap))
+                            markerList.put(routeid,marker)
+                        }
+                    }
+            })
+
             mMapViewModel.loadBusStops()?.observe(this, Observer {
 
-               it?.forEach { response ->
-                   Observable.just(response.data)
-                       .flatMapIterable { it }
-                       .filter{it.routes.contains(segment_response?._routeid)}
-                       .subscribe{
-                           item ->
-                           if(routeid_id_2_location.get(item.stopID) == null){
-                               routeid_id_2_location.put(item.stopID, LatLng(item.location.lat,item.location.lng))
-                           }
+                it?.forEach { response ->
+                    Observable.just(response.data)
+                        .flatMapIterable { it }
+                        .filter{it.routes.contains(segment_response?._routeid)}
+                        .subscribe{
+                                item ->
+                            if(routeid_id_2_location.get(item.stopID) == null){
+                                routeid_id_2_location.put(item.stopID, LatLng(item.location.lat,item.location.lng))
+                            }
 
-                           val marker = mMap?.addMarker(MarkerOptions().title(item.name).position(LatLng(item.location.lat, item.location.lng)))
-                           marker?.
-                               setIcon(BitmapDescriptorFactory.fromBitmap(drawableToBitmap(R.drawable.ic_stop_temp)))
-
-                       }
-
-               }
+                            val marker = mMap?.addMarker(MarkerOptions().title(item.name).position(LatLng(item.location.lat, item.location.lng)))
+                            marker?.
+                                setIcon(BitmapDescriptorFactory.fromBitmap(drawableToBitmap(R.drawable.ic_stop_temp)))
+                        }
+                }
             })
 
         })
@@ -254,10 +216,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
             }
         }
     }
-
-
-
-
 
     override fun onMarkerClick(p0: Marker?): Boolean {
         return false
