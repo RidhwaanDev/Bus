@@ -34,7 +34,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
 
     private lateinit var mMapViewModel: MapViewModel
     private lateinit var mMapView: MapView
-    private val selected_route = "Route H"
+    private val selected_route = "Route LX"
 
 
     private val markerList = mutableMapOf<String, Marker?>()
@@ -83,7 +83,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
 
         mMap = map
         mMap?.setOnMarkerClickListener(this)
-        mMap?.moveCamera(CameraUpdateFactory.newLatLng(nb))
+        mMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(40.488304, -74.447751), 12f))
 
         load_route_into_ui()
 
