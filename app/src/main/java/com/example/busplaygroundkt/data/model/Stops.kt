@@ -11,7 +11,8 @@ object Stops {
 
     data class Stop(@SerializedName("stop_id")val stopID:String,
                     @SerializedName("name")val name:String,
-                    @SerializedName("location") val location : Location
+                    @SerializedName("location") val location : Location,
+                    @SerializedName("routes") val routes : List<String>
 
     )
     data class Location(@SerializedName("lat" ) val lat:Double,

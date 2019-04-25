@@ -135,26 +135,31 @@ class BusRepository @Inject constructor( private val busService: VehiclesService
         return mutLiveData
     }
 
+
+
+
     fun getSegments(long_name: String ) : LiveData<Segments.Response>? {
         val mutLiveData = MutableLiveData<Segments.Response>()
 
-//        routesService.getRoutes(Config.agencyID,Config.nbCampus)
-//            .subscribeOn(Schedulers.io())
-//            .map{it.data.getValue(Config.agencyID.toString())}
-//            .subscribe { routes_list ->
-//                println("ROUTES LIST $routes_list")
-//                Observable.just(routes_list)
-//                    .flatMapIterable { it }
-//                    .filter{it.long_name == long_name}
-//                    .subscribe { result ->
-
-                      segmentsService.getSegments(Config.agencyID,Config.nbCampus,long_name)
+        routesService.getRoutes(Config.agencyID,Config.nbCampus)
+            .subscribeOn(Schedulers.io())
+            .map{it.data.getValue(Config.agencyID.toString())}
+            .subscribe { routes_list ->
+                Observable.just(routes_list)
+                    .flatMapIterable { it }
+                    .filter{it.long_name == long_name}
+                    .subscribe { result ->
+                      segmentsService.getSegments(Config.agencyID,Config.nbCampus,result.routeId)
                           .subscribeOn(Schedulers.io())
-                          .subscribe ({ result -> mutLiveData.postValue(result) }, {t: Throwable? -> t?.printStackTrace()})
+                          .subscribe ({ result_f ->
+                              result_f._routeid = result.routeId
+                              mutLiveData.postValue(result_f)
 
-//                    }
+                          }, {t: Throwable? -> t?.printStackTrace()})
 
-//            }
+                    }
+
+            }
         return mutLiveData
     }
 }
