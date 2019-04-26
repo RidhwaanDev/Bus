@@ -1,8 +1,8 @@
 package com.example.busplaygroundkt.data.repository
 
-import android.arch.lifecycle.LiveData
-import android.arch.lifecycle.MutableLiveData
-import android.support.annotation.MainThread
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.annotation.MainThread
 import com.example.busplaygroundkt.Config
 import com.example.busplaygroundkt.P
 import com.example.busplaygroundkt.data.model.Routes
