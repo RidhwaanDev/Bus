@@ -60,9 +60,9 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
         mMapViewModel.let { lifecycle.addObserver(it) }
     }
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val v  = inflater.inflate(com.example.busplaygroundkt.R.layout.fragment_map, container ,false)
-        val navController = findNavController()
-        navController.navigate(R.id.action_fragment_app_to_test_frag)
+        val v  = inflater.inflate(com.example.busplaygroundkt.R.layout.fragment_map_test, container ,false)
+//        val navController = findNavController()
+//        navController.navigate(R.id.action_fragment_app_to_test_frag)
         mMapView = v.findViewById(com.example.busplaygroundkt.R.id.map)
         mMapView.onCreate(savedInstanceState)
         mMapView.getMapAsync(this)

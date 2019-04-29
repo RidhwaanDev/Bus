@@ -14,8 +14,6 @@ class TestFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_map_test, container,false)
-         val fab = view.findViewById<FloatingActionButton>(R.id.fab)
-        fab.setOnClickListener { view -> Snackbar.make(view,"Whats up dawg",Snackbar.LENGTH_SHORT).show() }
         return view
     }
 }
