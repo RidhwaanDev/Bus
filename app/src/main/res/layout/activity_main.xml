@@ -21,8 +21,6 @@
                 app:navGraph="@navigation/nav_graph"
                 app:defaultNavHost="true"
                 android:id="@+id/fragment2"/>
-
-
     </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -8,8 +8,18 @@
     <fragment android:id="@+id/fragment_app"
               android:name="com.example.busplaygroundkt.ui.MapFragment"
               android:label="fragment_map"
-              tools:layout ="@layout/fragment_map"
-    />
+              tools:layout ="@layout/fragment_map">
+
+         <action android:id="@+id/action_fragment_app_to_test_frag"
+                  app:destination="@id/test_fragment"/>
+
+    </fragment>
+
+
+    <fragment
+              android:name="com.example.busplaygroundkt.ui.TestFragment"
+              android:id="@+id/test_fragment"
+              android:label="test"/>
 
 
 </navigation>

@@ -19,9 +19,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val mapFragment = MapFragment.newInstance()
-        supportFragmentManager.beginTransaction().add(R.id.content,mapFragment)
-            .commit()
+//        val mapFragment = MapFragment.newInstance()
+//        supportFragmentManager.beginTransaction().add(R.id.content,mapFragment)
+//            .commit()
 
     }
 

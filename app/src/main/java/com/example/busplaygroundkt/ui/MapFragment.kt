@@ -24,6 +24,8 @@ import android.os.Handler
 import android.util.Log
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.TextView
+import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import com.example.busplaygroundkt.data.repository.BusRepository
 import com.google.maps.android.PolyUtil
 import java.lang.NullPointerException
@@ -59,6 +61,8 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
     }
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val v  = inflater.inflate(com.example.busplaygroundkt.R.layout.fragment_map, container ,false)
+        val navController = findNavController()
+        navController.navigate(R.id.action_fragment_app_to_test_frag)
         mMapView = v.findViewById(com.example.busplaygroundkt.R.id.map)
         mMapView.onCreate(savedInstanceState)
         mMapView.getMapAsync(this)
